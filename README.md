@@ -1,1 +1,1 @@
-# example_ros_ws
+# navlab_turtlebot
