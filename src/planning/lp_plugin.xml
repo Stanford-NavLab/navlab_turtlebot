@@ -1,4 +1,4 @@
-<library path="lib/liblocal_planner">
+<library path="lib/libplanning">
   <class name="local_planner/LocalPlanner" type="local_planner::LocalPlanner" base_class_type="nav_core::BaseLocalPlanner">
     <description>
       Simplest Plugin for BaseLocalPlanner
