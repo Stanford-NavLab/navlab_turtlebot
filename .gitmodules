@@ -1,0 +1,3 @@
+[submodule "src/navlab_turtlebot_sim"]
+	path = src/navlab_turtlebot_sim
+	url = git@github.com:Stanford-NavLab/navlab_turtlebot_sim.git
