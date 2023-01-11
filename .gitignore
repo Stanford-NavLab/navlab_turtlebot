@@ -4,6 +4,9 @@ build/
 devel/
 .catkin_tools/
 
+# navlab_turtlebot_sim package
+src/navlab_turtlebot_sim/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
