@@ -9,6 +9,7 @@ import rospkg
 import numpy as np
 import time 
 
+from geometry_msgs.msg import Twist
 from trajectory_msgs.msg import JointTrajectory
 
 import params.params as params
@@ -48,6 +49,7 @@ class LinearPlanner:
 
         # Publishers
         self.traj_pub = rospy.Publisher('planner/traj', JointTrajectory, queue_size=10)
+        self.cmd_pub = rospy.Publisher('rtd_cmd', Twist, queue_size=10)
 
         # Initial conditions [m],[m/s],[m/s^2]
         self.p_0 = params.P_0
@@ -136,43 +138,52 @@ class LinearPlanner:
 
 
     def replan(self, event):
-        """Replan
+        # NOTE: testing local planner integration
+        print("publishing cmd")
+        t = Twist()
+        t.linear.x = 0.5
+        t.angular.z = 0.5
+        self.cmd_pub.publish(t)
+
+
+    # def replan(self, event):
+    #     """Replan
         
-        Periodically called to perform trajectory optimization.
+    #     Periodically called to perform trajectory optimization.
         
-        """
-        t_start_plan = time.time()
+    #     """
+    #     t_start_plan = time.time()
 
-        # Find a new v_peak
-        v_peak = self.traj_opt(t_start_plan)
+    #     # Find a new v_peak
+    #     v_peak = self.traj_opt(t_start_plan)
 
-        if v_peak is None:
-            # Failed to find new plan
-            print("Failed to find new plan")
-        else:
-            # Generate new trajectory
-            k = np.hstack((self.v_0, self.a_0, v_peak))
-            P,V,A = self.LPM.compute_trajectory(k)
-            P = P + self.p_0  # translate to p_0
+    #     if v_peak is None:
+    #         # Failed to find new plan
+    #         print("Failed to find new plan")
+    #     else:
+    #         # Generate new trajectory
+    #         k = np.hstack((self.v_0, self.a_0, v_peak))
+    #         P,V,A = self.LPM.compute_trajectory(k)
+    #         P = P + self.p_0  # translate to p_0
 
-            # Update initial conditions
-            self.v_0 = V[:,params.NEXT_IC_IDX][:,None]
-            self.a_0 = A[:,params.NEXT_IC_IDX][:,None]
-            self.p_0 = P[:,params.NEXT_IC_IDX][:,None]
+    #         # Update initial conditions
+    #         self.v_0 = V[:,params.NEXT_IC_IDX][:,None]
+    #         self.a_0 = A[:,params.NEXT_IC_IDX][:,None]
+    #         self.p_0 = P[:,params.NEXT_IC_IDX][:,None]
 
-            print("Found new trajectory, v_pk = ", np.round(k[:,2], 2))
-            print(" Start point: ", np.round(P[:,0], 2))
-            print(" End point: ", np.round(P[:,-1], 2))
+    #         print("Found new trajectory, v_pk = ", np.round(k[:,2], 2))
+    #         print(" Start point: ", np.round(P[:,0], 2))
+    #         print(" End point: ", np.round(P[:,-1], 2))
 
-            # Create and send trajectory msg
-            t2start = 0  # TODO: this is just a filler value for now
-            traj_msg = utils.wrap_2D_traj_msg((P,V,A), t2start)
-            self.traj_pub.publish(traj_msg)
+    #         # Create and send trajectory msg
+    #         t2start = 0  # TODO: this is just a filler value for now
+    #         traj_msg = utils.wrap_2D_traj_msg((P,V,A), t2start)
+    #         self.traj_pub.publish(traj_msg)
         
-        # Check for goal-reached
-        if np.linalg.norm(P[:,-1][:,None] - self.p_goal) < params.R_GOAL_REACHED:
-            print("Goal reached")
-            self.done = True
+    #     # Check for goal-reached
+    #     if np.linalg.norm(P[:,-1][:,None] - self.p_goal) < params.R_GOAL_REACHED:
+    #         print("Goal reached")
+    #         self.done = True
 
     
     def run(self):

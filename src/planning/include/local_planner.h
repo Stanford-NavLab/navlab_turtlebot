@@ -71,6 +71,7 @@ namespace local_planner{
              * @param msg RTD twist cmd msg
             */
             void twistCallback(const geometry_msgs::Twist::ConstPtr& msg);
+            geometry_msgs::Twist cmd_vel_;
 
             base_local_planner::LocalPlannerUtil planner_util_;   
             

@@ -24,13 +24,15 @@ namespace local_planner{
     {
         if(!initialized_)
         {
+            ROS_INFO("Initializing local_planner");
             tf_ = tf;
             costmap_ros_ = costmap_ros;
             initialized_ = true;
 
             ros::NodeHandle private_nh("~/" + name);
+            ros::NodeHandle public_nh;
             plan_pub_ = private_nh.advertise<nav_msgs::Path>("global_plan", 1);
-            twist_sub_ = private_nh.subscribe("rtd_cmd", 1, &LocalPlanner::twistCallback, this);
+            twist_sub_ = public_nh.subscribe("rtd_cmd", 1, &LocalPlanner::twistCallback, this);
         }
     }
 
@@ -40,6 +42,7 @@ namespace local_planner{
         ROS_INFO("Got twist command");
         ROS_INFO("  linear.x: %f", msg->linear.x);
         ROS_INFO("  angular.z: %f", msg->angular.z);
+        cmd_vel_ = *msg;
     }
 
 
@@ -69,7 +72,8 @@ namespace local_planner{
             return false;
         }
         ROS_INFO("Computing velocity commands");
-        cmd_vel.linear.x = 0.1;
+        // cmd_vel.linear.x = 0.1;
+        cmd_vel = cmd_vel_;
         return true;
     }
 
