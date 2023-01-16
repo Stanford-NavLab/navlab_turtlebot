@@ -146,44 +146,51 @@ class LinearPlanner:
         self.cmd_pub.publish(t)
 
 
-    # def replan(self, event):
-    #     """Replan
+    def replan(self, event):
+        """Replan
         
-    #     Periodically called to perform trajectory optimization.
+        Periodically called to perform trajectory optimization.
         
-    #     """
-    #     t_start_plan = time.time()
+        """
+        t_start_plan = time.time()
 
-    #     # Find a new v_peak
-    #     v_peak = self.traj_opt(t_start_plan)
+        # Find a new v_peak
+        v_peak = self.traj_opt(t_start_plan)
 
-    #     if v_peak is None:
-    #         # Failed to find new plan
-    #         print("Failed to find new plan")
-    #     else:
-    #         # Generate new trajectory
-    #         k = np.hstack((self.v_0, self.a_0, v_peak))
-    #         P,V,A = self.LPM.compute_trajectory(k)
-    #         P = P + self.p_0  # translate to p_0
+        if v_peak is None:
+            # Failed to find new plan
+            print("Failed to find new plan")
+        else:
+            # Generate new trajectory
+            k = np.hstack((self.v_0, self.a_0, v_peak))
+            P,V,A = self.LPM.compute_trajectory(k)
+            P = P + self.p_0  # translate to p_0
 
-    #         # Update initial conditions
-    #         self.v_0 = V[:,params.NEXT_IC_IDX][:,None]
-    #         self.a_0 = A[:,params.NEXT_IC_IDX][:,None]
-    #         self.p_0 = P[:,params.NEXT_IC_IDX][:,None]
+            # Update initial conditions
+            self.v_0 = V[:,params.NEXT_IC_IDX][:,None]
+            self.a_0 = A[:,params.NEXT_IC_IDX][:,None]
+            self.p_0 = P[:,params.NEXT_IC_IDX][:,None]
 
-    #         print("Found new trajectory, v_pk = ", np.round(k[:,2], 2))
-    #         print(" Start point: ", np.round(P[:,0], 2))
-    #         print(" End point: ", np.round(P[:,-1], 2))
+            print("Found new trajectory, v_pk = ", np.round(k[:,2], 2))
+            print(" Start point: ", np.round(P[:,0], 2))
+            print(" End point: ", np.round(P[:,-1], 2))
 
-    #         # Create and send trajectory msg
-    #         t2start = 0  # TODO: this is just a filler value for now
-    #         traj_msg = utils.wrap_2D_traj_msg((P,V,A), t2start)
-    #         self.traj_pub.publish(traj_msg)
+            # # Create and send trajectory msg
+            # t2start = 0  # TODO: this is just a filler value for now
+            # traj_msg = utils.wrap_2D_traj_msg((P,V,A), t2start)
+            # self.traj_pub.publish(traj_msg)
+
+            # Send twist cmd
+            # Linearly approximate 
+            cmd = Twist()
+            cmd.linear.x = np.linalg.norm(v_peak)
+            cmd.angular.z = np.arccos(self.v_0.T @ v_peak / (np.linalg.norm(self.v_0) * np.linalg.norm(v_peak)))
+            
         
-    #     # Check for goal-reached
-    #     if np.linalg.norm(P[:,-1][:,None] - self.p_goal) < params.R_GOAL_REACHED:
-    #         print("Goal reached")
-    #         self.done = True
+        # Check for goal-reached
+        if np.linalg.norm(P[:,-1][:,None] - self.p_goal) < params.R_GOAL_REACHED:
+            print("Goal reached")
+            self.done = True
 
     
     def run(self):

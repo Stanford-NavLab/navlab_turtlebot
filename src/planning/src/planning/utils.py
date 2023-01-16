@@ -180,3 +180,41 @@ def prune_vel_samples(V, v_0, max_norm, max_delta):
     return V[:,keep_idx]
 
 
+def normalize(v):
+    """Normalize a vector
+
+    Parameters
+    ----------
+    v : np.array
+        Vector to normalize
+
+    Returns
+    -------
+    np.array
+        Normalized vector
+
+    """
+    if np.linalg.norm(v) == 0:
+        return v
+    return v / np.linalg.norm(v)
+
+
+def angle_btwn_vectors(v1, v2):
+    """Angle between two vectors
+
+    Parameters
+    ----------
+    v1 : np.array
+        Vector 1
+    v2 : np.array
+        Vector 2
+
+    Returns
+    -------
+    float
+        Angle between vectors in radians
+
+    """
+    v1_ = normalize(v1.flatten())
+    v2_ = normalize(v2.flatten())
+    return np.arccos(np.dot(v1_, v2_))
