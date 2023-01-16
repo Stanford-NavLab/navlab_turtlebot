@@ -12,3 +12,5 @@ ROS workspace for turtlebot autonomy. Developed and tested with Python 3 and ROS
 5. Set turtlebot model environment variable in `bashrc`: `export TURTLEBOT3_MODEL="burger"` 
 6. Run `catkin build` from workspace root.
 
+## Run
+1. 
