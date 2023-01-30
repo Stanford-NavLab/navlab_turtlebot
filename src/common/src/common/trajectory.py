@@ -1,0 +1,75 @@
+"""Trajectory class
+
+"""
+
+import numpy as np
+
+
+class Trajectory:
+    """Trajectory class
+
+    Planned trajectory
+    
+    Attributes
+    ----------
+    length : int
+        Length of trajectory (i.e. number of timesteps), abbreviated as N below
+    n_dim : int
+        State dimension of the trajectory (i.e. 2D or 3D)
+    time : np.array (N)
+        Time array
+    positions : np.ndarray (N x N_dim)
+        Positions
+    velocities : np.ndarray (N x N_dim)
+        Velocities
+    accelerations : np.ndarray (N x N_dim)
+        Accelerations
+
+    """
+    def __init__(self, time, n_dim=None, values=None):
+        """Initialize trajectory
+        
+        Parameters
+        ----------
+        time : np.array (N)
+            Time array
+        n_dim : int
+            State dimension of the trajectory (i.e. 2D or 3D)
+        values : np.ndarray (3 x N x n_dim)
+            Values array containing positions, velocities, and accelerations
+
+        """
+        self.time = time
+        self.length = len(time)
+        if values is None:
+            if n_dim is None:
+                raise ValueError("Must specify N_dim or values")
+            else:
+                self.n_dim = n_dim
+                self.positions = np.zeros((self.length, self.n_dim))
+                self.velocities = np.zeros((self.length, self.n_dim))
+                self.accelerations = np.zeros((self.length, self.n_dim))
+        else:
+            self.n_dim = values.shape[2]
+            self.positions = values[0]
+            self.velocities = values[1]
+            self.accelerations = values[2]
+    
+
+    def compute_twist_controls(self):
+        """Compute twists from trajectory
+
+        Returns
+        -------
+        np.ndarray (N x 6)
+            Twist array
+
+        """
+        # Array of (v, w) pairs where v is linear velocity and w is angular velocity
+        twists = np.zeros((self.length, 2))
+        twists[:,0] = np.linalg.norm(self.velocities, axis=1)
+
+        # Compute angular velocities
+        
+
+        return twists

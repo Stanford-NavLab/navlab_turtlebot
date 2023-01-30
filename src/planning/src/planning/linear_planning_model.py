@@ -35,8 +35,13 @@ class LinearPlanningModel:
     -------
     compute_trajectory(k) 
         Compute nominal trajectory from a given trajectory parameter
+    compute_positions(k)
+        Compute positions from a given trajectory parameter
+    compute_endpoints(v_0, a_0, V_peak)
+        Compute trajectory endpoints given initial conditions and collection of V_peaks
     solve_trajectory(v_0, a_0, p_goal)
         Solve for trajectory parameter given initial conditions and goal position
+    
     """
     def __init__(self, mat_file):
         """Construct LPM object from .mat file.
@@ -63,51 +68,52 @@ class LinearPlanningModel:
 
     def compute_trajectory(self, k):
         """Compute nominal trajectory from a given trajectory parameter.
-
         Parameters
         ----------
         k : np.array
-            trajectory parameter k = (v_0, a_0, v_peak), n x 3 where n is workspace dimension
+            trajectory parameter k = (v_0, a_0, v_peak), 3 x n where n is workspace dimension
         
         Returns
         -------
         Tuple 
-            Tuple of the form (p,v,a) where each of p,v,a are n x N where n is the workspace dimension.
+            Tuple of the form (p,v,a) where each of p,v,a are N x n where n is the workspace dimension and N is the trajectory length.
         
         """
-        p = k @ self.P_mat
-        v = k @ self.V_mat
-        a = k @ self.A_mat
-        return p,v,a
+        p = k.T @ self.P_mat
+        v = k.T @ self.V_mat
+        a = k.T @ self.A_mat
+        return p.T, v.T, a.T
 
     
     def compute_positions(self, k):
         """Compute positions from a given trajectory parameter.
-
         Parameters
         ----------
         k : np.array
-            trajectory parameter k = (v_0, a_0, v_peak), n x 3 where n is workspace dimension
+            trajectory parameter k = (v_0, a_0, v_peak), 3 x n where n is workspace dimension
         
         Returns
         -------
-        np.array 
+        np.array (N x n)
             Positions
         
         """
-        return k @ self.P_mat
+        return (k.T @ self.P_mat).T
 
     
     def compute_endpoints(self, v_0, a_0, V_peak):
         """Compute trajectory endpoints given initial conditions and collection of V_peaks
         
         """
+        v_0 = v_0[:,None]
+        a_0 = a_0[:,None]
+
         LPM_p_final = self.P_mat[:,-1]
         # Final position contribution from v_0 and a_0
         p_from_v_0_and_a_0 = (np.hstack((v_0, a_0)) @ LPM_p_final[:2])[:, None]
         # Add in contribution from v_peak
-        P_endpoints = p_from_v_0_and_a_0 + LPM_p_final[2] * V_peak 
-        return P_endpoints
+        P_endpoints = p_from_v_0_and_a_0 + LPM_p_final[2] * V_peak.T
+        return P_endpoints.T
 
 
     def solve_trajectory(self, v_0, a_0, p_goal):

@@ -12,13 +12,14 @@ import time
 from geometry_msgs.msg import Twist
 from trajectory_msgs.msg import JointTrajectory
 
-import params.params as params
+import common.params as params
+from common.utils import rand_in_bounds, wrap_2D_traj_msg
 from planning.linear_planning_model import LinearPlanningModel
-import planning.utils as utils
+from planning.utils import check_obs_collision, prune_vel_samples
 
 
 class LinearPlanner:
-    """Linear Planner class
+    """Linear Planner node
 
     Linear Trajectory planner which recomputes collision-free trajectories to follow 
     in a receding-horizon fashion.
@@ -35,7 +36,7 @@ class LinearPlanner:
     """
     def __init__(self):
         # Initialize node
-        rospy.init_node('linear_planner', anonymous=True, disable_signals=True)
+        rospy.init_node('linear_planner', disable_signals=True)
         self.rate = rospy.Rate(10)
 
         # Initialize LPM object
@@ -48,13 +49,13 @@ class LinearPlanner:
         rospy.Timer(rospy.Duration(params.T_REPLAN), self.replan)
 
         # Publishers
-        self.traj_pub = rospy.Publisher('planner/traj', JointTrajectory, queue_size=10)
-        self.cmd_pub = rospy.Publisher('rtd_cmd', Twist, queue_size=10)
+        self.traj_pub = rospy.Publisher('/planner/traj', JointTrajectory, queue_size=10)
+        #self.cmd_pub = rospy.Publisher('rtd_cmd', Twist, queue_size=10)
 
         # Initial conditions [m],[m/s],[m/s^2]
         self.p_0 = params.P_0
-        self.v_0 = np.zeros((params.N_DIM,1))
-        self.a_0 = np.zeros((params.N_DIM,1))
+        self.v_0 = np.zeros(params.N_DIM)
+        self.a_0 = np.zeros(params.N_DIM)
 
         # Goal position [m]
         self.p_goal = params.P_GOAL
@@ -80,7 +81,7 @@ class LinearPlanner:
 
         """
         for obs in self.obstacles:
-            if not utils.check_obs_collision(positions, obs, 2*params.R_BOT):
+            if not check_obs_collision(positions, obs, 2*params.R_BOT):
                 return False
         return True
 
@@ -103,24 +104,23 @@ class LinearPlanner:
         
         """
         # Generate potential v_peak samples
-        V_peak = utils.rand_in_bounds(params.V_BOUNDS, params.N_PLAN_MAX)
+        V_peak = rand_in_bounds(params.V_BOUNDS, params.N_PLAN_MAX)
         # Eliminate samples that exceed the max velocity and max delta from initial velocity
-        V_peak = utils.prune_vel_samples(V_peak, self.v_0, params.V_MAX_NORM, params.DELTA_V_PEAK_MAX)
+        V_peak = prune_vel_samples(V_peak, self.v_0, params.V_MAX_NORM, params.DELTA_V_PEAK_MAX)
 
         # Calculate the endpoints for the sample v_peaks
         P_endpoints = self.LPM.compute_endpoints(self.v_0, self.a_0, V_peak) + self.p_0
         
         # Sort V_peaks by distance to goal
-        dist_to_goal = np.linalg.norm(P_endpoints - self.p_goal, axis=0)
+        dist_to_goal = np.linalg.norm(P_endpoints - self.p_goal, axis=1)
         V_sort_idxs = np.argsort(dist_to_goal)
-        V_peak = V_peak[:,V_sort_idxs]
+        V_peak = V_peak[V_sort_idxs]
 
         # Iterate through V_peaks until we find a feasible one
-        for i in range(V_peak.shape[1]):
+        for i, v_peak in enumerate(V_peak):
         
             # Get candidate trajectory positions for current v_peak
-            v_peak = V_peak[:,i][:,None]
-            k = np.hstack((self.v_0, self.a_0, v_peak))
+            k = np.vstack((self.v_0, self.a_0, v_peak))
             cand_traj = self.LPM.compute_positions(k) + self.p_0
 
             # check against obstacles
@@ -137,13 +137,13 @@ class LinearPlanner:
         return None
 
 
-    def replan(self, event):
-        # NOTE: testing local planner integration
-        print("publishing cmd")
-        t = Twist()
-        t.linear.x = 0.5
-        t.angular.z = 0.5
-        self.cmd_pub.publish(t)
+    # def replan(self, event):
+    #     # NOTE: testing local planner integration
+    #     print("publishing cmd")
+    #     t = Twist()
+    #     t.linear.x = 0.5
+    #     t.angular.z = 0.5
+    #     self.cmd_pub.publish(t)
 
 
     def replan(self, event):
@@ -162,35 +162,35 @@ class LinearPlanner:
             print("Failed to find new plan")
         else:
             # Generate new trajectory
-            k = np.hstack((self.v_0, self.a_0, v_peak))
+            k = np.vstack((self.v_0, self.a_0, v_peak))
             P,V,A = self.LPM.compute_trajectory(k)
             P = P + self.p_0  # translate to p_0
 
-            # Update initial conditions
-            self.v_0 = V[:,params.NEXT_IC_IDX][:,None]
-            self.a_0 = A[:,params.NEXT_IC_IDX][:,None]
-            self.p_0 = P[:,params.NEXT_IC_IDX][:,None]
+            # Update initial conditions for next replanning instance
+            self.p_0 = P[params.NEXT_IC_IDX]
+            self.v_0 = V[params.NEXT_IC_IDX]
+            self.a_0 = A[params.NEXT_IC_IDX]
 
-            print("Found new trajectory, v_pk = ", np.round(k[:,2], 2))
-            print(" Start point: ", np.round(P[:,0], 2))
-            print(" End point: ", np.round(P[:,-1], 2))
+            print(f"Found new trajectory, v_pk = {np.round(k[2], 2)}")
+            print(f" Start point: {np.round(P[0], 2)}")
+            print(f" End point: {np.round(P[-1], 2)}")
 
-            # # Create and send trajectory msg
-            # t2start = 0  # TODO: this is just a filler value for now
-            # traj_msg = utils.wrap_2D_traj_msg((P,V,A), t2start)
-            # self.traj_pub.publish(traj_msg)
+            # Create and send trajectory msg
+            t2start = 0  # TODO: this is just a filler value for now
+            traj_msg = wrap_2D_traj_msg((P,V,A), t2start)
+            self.traj_pub.publish(traj_msg)
 
-            # Send twist cmd
-            # Linearly approximate 
-            cmd = Twist()
-            cmd.linear.x = np.linalg.norm(v_peak)
-            cmd.angular.z = np.arccos(self.v_0.T @ v_peak / (np.linalg.norm(self.v_0) * np.linalg.norm(v_peak)))
-            
+            # # Send twist cmd
+            # # Linearly approximate 
+            # cmd = Twist()
+            # cmd.linear.x = np.linalg.norm(v_peak)
+            # cmd.angular.z = np.arccos(self.v_0.T @ v_peak / (np.linalg.norm(self.v_0) * np.linalg.norm(v_peak)))
+            # print(f"Twist cmd: (v = {cmd.linear.x:.2f}, w = {cmd.angular.z:.2f})")
         
-        # Check for goal-reached
-        if np.linalg.norm(P[:,-1][:,None] - self.p_goal) < params.R_GOAL_REACHED:
-            print("Goal reached")
-            self.done = True
+            # Check for goal-reached
+            if np.linalg.norm(P[-1] - self.p_goal) < params.R_GOAL_REACHED:
+                print("Goal reached")
+                self.done = True
 
     
     def run(self):

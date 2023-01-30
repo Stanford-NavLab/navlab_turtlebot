@@ -14,7 +14,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from std_srvs.srv import Empty
 
-import params.params as params
+import common.params as params
 from planning.linear_planning_model import LinearPlanningModel
 import planning.utils as utils
 
