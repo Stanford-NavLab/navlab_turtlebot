@@ -14,4 +14,4 @@ ROS workspace for turtlebot autonomy. Developed and tested with Python 3 and ROS
 
 ## Run
 1. `roslaunch navlab_turtlebot_sim sim_flightroom_navigate.launch`
-2. `rosrun planner linear_planner.py`
+2. `rosrun planning linear_planner.py`
