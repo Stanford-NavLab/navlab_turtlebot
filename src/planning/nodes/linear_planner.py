@@ -13,9 +13,9 @@ from geometry_msgs.msg import Twist
 from trajectory_msgs.msg import JointTrajectory
 
 import common.params as params
-from common.utils import rand_in_bounds, wrap_2D_traj_msg
+from common.utils import rand_in_bounds
 from planning.linear_planning_model import LinearPlanningModel
-from planning.utils import check_obs_collision, prune_vel_samples
+from planning.utils import check_obs_collision, prune_vel_samples, wrap_2D_traj_msg
 
 
 class LinearPlanner:

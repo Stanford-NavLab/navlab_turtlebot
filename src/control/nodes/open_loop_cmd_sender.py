@@ -10,7 +10,7 @@ from geometry_msgs.msg import Twist, PoseStamped
 from trajectory_msgs.msg import JointTrajectory
 
 import common.params as params
-from common.utils import unwrap_2D_traj_msg
+from planning.utils import unwrap_2D_traj_msg
 
 
 class OpenLoopCmdSender():
@@ -31,6 +31,7 @@ class OpenLoopCmdSender():
 
         # Publishers
         self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        # Twist angular z: positive is CCW, negative is CW (TODO: Check this)
 
         # Subscribers
         traj_sub = rospy.Subscriber('planner/traj', JointTrajectory, self.traj_callback)
@@ -55,7 +56,8 @@ class OpenLoopCmdSender():
         print("Received trajectory: ", traj)
 
         # Compute twist controls
-
+        twists = traj.compute_twist_controls()
+        print("Twists: ", twists)
 
         # self.new_traj_flag = True
         # # If no current trajectory yet, set it

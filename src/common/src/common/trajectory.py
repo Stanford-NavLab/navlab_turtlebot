@@ -4,6 +4,9 @@
 
 import numpy as np
 
+from common.utils import wrap_angle
+import common.params as params
+
 
 class Trajectory:
     """Trajectory class
@@ -70,6 +73,9 @@ class Trajectory:
         twists[:,0] = np.linalg.norm(self.velocities, axis=1)
 
         # Compute angular velocities
-        
+        thetas = np.arctan2(self.velocities[:,1], self.velocities[:,0])
+        dthetas = wrap_angle(np.diff(thetas))
+        twists[:-1,1] = dthetas / params.DT
+        # Final angular twist is left as 0
 
         return twists
