@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Linear Planner
 
 ROS Linear Planner node.
@@ -171,9 +173,9 @@ class LinearPlanner:
             self.v_0 = V[params.NEXT_IC_IDX]
             self.a_0 = A[params.NEXT_IC_IDX]
 
-            print(f"Found new trajectory, v_pk = {np.round(k[2], 2)}")
-            print(f" Start point: {np.round(P[0], 2)}")
-            print(f" End point: {np.round(P[-1], 2)}")
+            print("Found new trajectory, v_pk = "+str(np.round(k[2], 2)))
+            print(" Start point: "+str(np.round(P[0], 2)))
+            print(" End point: "+str(np.round(P[-1], 2)))
 
             # Create and send trajectory msg
             t2start = 0  # TODO: this is just a filler value for now
