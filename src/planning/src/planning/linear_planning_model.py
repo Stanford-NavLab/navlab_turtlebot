@@ -79,9 +79,9 @@ class LinearPlanningModel:
             Tuple of the form (p,v,a) where each of p,v,a are N x n where n is the workspace dimension and N is the trajectory length.
         
         """
-        p = k.T @ self.P_mat
-        v = k.T @ self.V_mat
-        a = k.T @ self.A_mat
+        p = np.matmul(k.T, self.P_mat)
+        v = np.matmul(k.T, self.V_mat)
+        a = np.matmul(k.T, self.A_mat)
         return p.T, v.T, a.T
 
     
@@ -98,7 +98,7 @@ class LinearPlanningModel:
             Positions
         
         """
-        return (k.T @ self.P_mat).T
+        return (np.matmul(k.T, self.P_mat)).T
 
     
     def compute_endpoints(self, v_0, a_0, V_peak):
@@ -110,7 +110,7 @@ class LinearPlanningModel:
 
         LPM_p_final = self.P_mat[:,-1]
         # Final position contribution from v_0 and a_0
-        p_from_v_0_and_a_0 = (np.hstack((v_0, a_0)) @ LPM_p_final[:2])[:, None]
+        p_from_v_0_and_a_0 = (np.matmul(np.hstack((v_0, a_0)), LPM_p_final[:2]))[:, None]
         # Add in contribution from v_peak
         P_endpoints = p_from_v_0_and_a_0 + LPM_p_final[2] * V_peak.T
         return P_endpoints.T
