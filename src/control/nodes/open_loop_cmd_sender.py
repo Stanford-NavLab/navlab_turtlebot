@@ -26,8 +26,12 @@ class OpenLoopCmdSender():
 
         # Class variables
         self.idx = 0  # current index in the trajectory
-        self.current_trajectory = None
-        self.next_trajectory = None
+        # self.current_trajectory = None
+        # self.next_trajectory = None
+        # self.current_twists = None
+        # self.next_twists = None
+        self.trajectory = None
+        self.twists = None
 
         # Publishers
         self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
@@ -53,37 +57,47 @@ class OpenLoopCmdSender():
         # Unwrap trajectory message
         time = params.T_VEC  # TODO: add t2start from message
         traj = unwrap_2D_traj_msg(data, time)
-        print("Received trajectory: ", traj)
+        #print("Received trajectory: ", traj)
 
         # Compute twist controls
         twists = traj.compute_twist_controls()
-        print("Twists: ", twists)
+        #print("Twists: ", twists)
+        self.twists = twists
 
-        # self.new_traj_flag = True
-        # # If no current trajectory yet, set it
-        # if self.current_trajectory is None:
-        #      pass
-        # # Otherwise, set next trajectory
-        # else:
-        #     pass
-        # rospy.loginfo("Received trajectory of length %d", len(data.states))
+        self.trajectory = traj
+        self.twists = twists
+        self.idx = 0
+
+        rospy.loginfo("Received trajectory of length %d", traj.length)
 
 
     def track(self):
         """Track next point in the current trajectory.
         TODO
         """
-        pass
+        print("idx ", self.idx, " ----------------------------------------")
+        twist = Twist()
+        twist.linear.x = self.twists[self.idx, 0]
+        twist.angular.z = self.twists[self.idx, 1]
+        print("     cmd: v = ", twist.linear.x, ", w = ", twist.angular.z)
+        self.cmd_pub.publish(twist)
+        self.idx += 1
+
+        if self.idx >= self.trajectory.length:
+            self.trajectory = None
+            self.twists = None
+            self.idx = 0
+            self.stop_motors()
 
     
-    # def stop_motors(self):
-    #     """Send stop command to all motors
-    #     """
-    #     rospy.loginfo("Stopping motors")
-    #     motor_cmd = Twist()
-    #     motor_cmd.linear.x = 0.0
-    #     motor_cmd.angular.z = 0.0
-    #     self.cmd_pub.publish(motor_cmd)
+    def stop_motors(self):
+        """Send stop command to all motors
+        """
+        rospy.loginfo("Stopping motors")
+        motor_cmd = Twist()
+        motor_cmd.linear.x = 0.0
+        motor_cmd.angular.z = 0.0
+        self.cmd_pub.publish(motor_cmd)
 
 
     def run(self):
@@ -92,7 +106,7 @@ class OpenLoopCmdSender():
         rospy.loginfo("Running Open-loop cmd sender")
         while not rospy.is_shutdown():
             
-            if self.current_trajectory is not None:
+            if self.trajectory is not None:
                 self.track()
 
             self.rate.sleep()

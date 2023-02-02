@@ -74,7 +74,7 @@ class Trajectory:
 
         # Compute angular velocities
         thetas = np.arctan2(self.velocities[:,1], self.velocities[:,0])
-        dthetas = wrap_angle(np.diff(thetas))
+        dthetas = wrap_angle(np.diff(thetas))  # TODO: final thetas sometimes doesn't seem to get wrapped properly
         twists[:-1,1] = dthetas / params.DT
         # Final angular twist is left as 0
 

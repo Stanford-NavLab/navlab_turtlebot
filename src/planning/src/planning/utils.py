@@ -71,9 +71,6 @@ def unwrap_2D_traj_msg(msg, time):
     ax = np.array(msg.points[0].accelerations)
     ay = np.array(msg.points[1].accelerations)
 
-    print(px)
-    print(px.shape)
-
     pos = np.hstack((px[:,None], py[:,None]))
     vel = np.hstack((vx[:,None], vy[:,None]))
     acc = np.hstack((ax[:,None], ay[:,None]))
