@@ -78,4 +78,7 @@ class Trajectory:
         twists[:-1,1] = dthetas / params.DT
         # Final angular twist is left as 0
 
+        # FIXME: this is a hack to set first angular twist to 0
+        twists[0,1] = 0
+
         return twists

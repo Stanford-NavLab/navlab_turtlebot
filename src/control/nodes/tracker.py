@@ -7,16 +7,17 @@ import os
 
 from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import Twist, PoseStamped
+from nav_msgs.msg import Odometry
 from trajectory_msgs.msg import JointTrajectory
 
 import common.params as params
 from planning.utils import unwrap_2D_traj_msg
 
 
-class OpenLoopCmdSender():
-    """Open-loop cmd sender node
+class Tracker():
+    """Trajectory tracker node
 
-    Receives trajectories and pops off commands to send.
+    Tracks double integrator trajectories with twist commands.
     
     """
     def __init__(self):
@@ -26,10 +27,6 @@ class OpenLoopCmdSender():
 
         # Class variables
         self.idx = 0  # current index in the trajectory
-        # self.current_trajectory = None
-        # self.next_trajectory = None
-        # self.current_twists = None
-        # self.next_twists = None
         self.trajectory = None
         self.twists = None
 
@@ -39,6 +36,9 @@ class OpenLoopCmdSender():
 
         # Subscribers
         traj_sub = rospy.Subscriber('planner/traj', JointTrajectory, self.traj_callback)
+        odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
+
+        self.odom = None  # [x, y, theta]
 
         # # Logging
         # path = '/home/navlab-nuc/Rover/flightroom_data/4_12_2022/debug/'
@@ -46,6 +46,22 @@ class OpenLoopCmdSender():
         # self.logger = csv.writer(open(os.path.join(path, filename), 'w'))
         # self.logger.writerow(['t', 'x', 'y', 'theta', 'z_x', 'z_y', 'z_theta', 
         #                       'x_nom', 'y_nom', 'theta_nom', 'v_nom'])
+
+
+    def odom_callback(self, msg):
+        """Odometry callback function
+
+        Parameters
+        ----------
+        msg : Odometry
+            Odometry message
+
+        """
+        x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
+        q = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
+        r = R.from_quat(q)
+        theta = r.as_euler('xyz')[2]
+        self.odom = np.array([x, y, theta])
 
 
     def traj_callback(self, data):
