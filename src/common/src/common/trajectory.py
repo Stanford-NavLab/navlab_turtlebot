@@ -57,6 +57,15 @@ class Trajectory:
             self.positions = values[0]
             self.velocities = values[1]
             self.accelerations = values[2]
+
+        self.thetas = None
+
+    
+    def compute_thetas(self):
+        """Compute thetas from trajectory
+
+        """
+        self.thetas = np.arctan2(self.velocities[:,1], self.velocities[:,0])
     
 
     def compute_twist_controls(self):
@@ -73,7 +82,10 @@ class Trajectory:
         twists[:,0] = np.linalg.norm(self.velocities, axis=1)
 
         # Compute angular velocities
-        thetas = np.arctan2(self.velocities[:,1], self.velocities[:,0])
+        if self.thetas is not None:
+            thetas = self.thetas
+        else:
+            thetas = np.arctan2(self.velocities[:,1], self.velocities[:,0])
         dthetas = wrap_angle(np.diff(thetas))  # TODO: final thetas sometimes doesn't seem to get wrapped properly
         twists[:-1,1] = dthetas / params.DT
         # Final angular twist is left as 0

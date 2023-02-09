@@ -67,6 +67,10 @@ class LinearPlanner:
 
         self.done = False
 
+        self.DUBINS = True  # limit planned velocities to some turning radius
+                            # current heading is determined by angle of v_0
+        self.DTHETA = np.pi/2  # max angle change per replanning [rad]
+
 
     def check_obstacle_collisions(self, positions):
         """ Check a sequence of positions against the current list of nearby obstacles for collision.
@@ -105,10 +109,18 @@ class LinearPlanner:
             Optimal v_peak or None if failed to find one
         
         """
-        # Generate potential v_peak samples
-        V_peak = rand_in_bounds(params.V_BOUNDS, params.N_PLAN_MAX)
-        # Eliminate samples that exceed the max velocity and max delta from initial velocity
-        V_peak = prune_vel_samples(V_peak, self.v_0, params.V_MAX_NORM, params.DELTA_V_PEAK_MAX)
+        if self.DUBINS:
+            # Sample from sector around current heading
+            theta = np.arctan2(self.v_0[1], self.v_0[0])
+            rands = np.random.rand(params.N_PLAN_MAX, 2)
+            thetas = theta - self.DTHETA + 2*self.DTHETA*rands[:,0]
+            rs = params.V_MAX_NORM*np.sqrt(rands[:,1])
+            V_peak = np.vstack((rs*np.cos(thetas), rs*np.sin(thetas))).T
+        else:
+            # Generate potential v_peak samples
+            V_peak = rand_in_bounds(params.V_BOUNDS, params.N_PLAN_MAX)
+            # Eliminate samples that exceed the max velocity and max delta from initial velocity
+            V_peak = prune_vel_samples(V_peak, self.v_0, params.V_MAX_NORM, params.DELTA_V_PEAK_MAX)
 
         # Calculate the endpoints for the sample v_peaks
         P_endpoints = self.LPM.compute_endpoints(self.v_0, self.a_0, V_peak) + self.p_0

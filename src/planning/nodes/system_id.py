@@ -26,7 +26,7 @@ DT = 0.1  # trajectory discretization time interval [s]
 N_PLAN = int(T_PLAN / DT)  # number of time steps in planned trajectory
 
 V_MAX = 0.25  # maximum velocity [m/s]
-W_MAX = 2.0  # maximum angular velocity [rad/s]
+W_MAX = 1.0  # maximum angular velocity [rad/s]
 
 DATA_PATH = '/home/navlab-exxact/data/turtlebot_systemid/'
 

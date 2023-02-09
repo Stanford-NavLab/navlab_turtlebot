@@ -57,11 +57,11 @@ class OpenLoopCmdSender():
         # Unwrap trajectory message
         time = params.T_VEC  # TODO: add t2start from message
         traj = unwrap_2D_traj_msg(data, time)
-        print("Received trajectory: ", traj.positions)
+        #print("Received trajectory: ", traj.positions)
 
         # Compute twist controls
         twists = traj.compute_twist_controls()
-        print("Twists: ", twists)
+        #print("Twists: ", twists)
         self.twists = twists
 
         self.trajectory = traj

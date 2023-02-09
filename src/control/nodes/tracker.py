@@ -12,6 +12,7 @@ from trajectory_msgs.msg import JointTrajectory
 
 import common.params as params
 from planning.utils import unwrap_2D_traj_msg
+from common.utils import wrap_angle
 
 
 class Tracker():
@@ -22,7 +23,7 @@ class Tracker():
     """
     def __init__(self):
         # Initialize node 
-        rospy.init_node('open_loop_cmd_sender')
+        rospy.init_node('tracker')
         self.rate = rospy.Rate(1/params.DT)
 
         # Class variables
@@ -73,11 +74,12 @@ class Tracker():
         # Unwrap trajectory message
         time = params.T_VEC  # TODO: add t2start from message
         traj = unwrap_2D_traj_msg(data, time)
-        print("Received trajectory: ", traj.positions)
+        #print("Received trajectory: ", traj.positions)
 
         # Compute twist controls
+        traj.compute_thetas()
         twists = traj.compute_twist_controls()
-        print("Twists: ", twists)
+        #print("Twists: ", twists)
         self.twists = twists
 
         self.trajectory = traj
@@ -92,12 +94,19 @@ class Tracker():
         TODO
         """
         print("idx ", self.idx, " ----------------------------------------")
+        # TODO: add feedback based on odometry
+        theta_hat = self.odom[2]
+        theta_nom = self.trajectory.thetas[self.idx]
+        theta_err = wrap_angle(theta_nom - theta_hat)
+        K_theta = 0.5
+
         twist = Twist()
         twist.linear.x = self.twists[self.idx, 0]
-        twist.angular.z = self.twists[self.idx, 1]
+        twist.angular.z = self.twists[self.idx, 1] + K_theta * theta_err
         print("     cmd: v = ", twist.linear.x, ", w = ", twist.angular.z)
         self.cmd_pub.publish(twist)
         self.idx += 1
+
 
         if self.idx >= self.trajectory.length:
             self.trajectory = None
@@ -119,7 +128,7 @@ class Tracker():
     def run(self):
         """Run node
         """
-        rospy.loginfo("Running Open-loop cmd sender")
+        rospy.loginfo("Running tracker")
         while not rospy.is_shutdown():
             
             if self.trajectory is not None:
@@ -132,8 +141,8 @@ class Tracker():
 
 
 if __name__ == '__main__':
-    olcs = OpenLoopCmdSender()
+    tracker = Tracker()
     try:
-        olcs.run()
+        tracker.run()
     except rospy.ROSInterruptException:
         pass
