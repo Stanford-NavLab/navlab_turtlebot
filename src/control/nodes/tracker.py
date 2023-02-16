@@ -4,8 +4,8 @@ import rospy
 import numpy as np
 import csv
 import os
-
 from scipy.spatial.transform import Rotation as R
+
 from geometry_msgs.msg import Twist, PoseStamped
 from nav_msgs.msg import Odometry
 from trajectory_msgs.msg import JointTrajectory

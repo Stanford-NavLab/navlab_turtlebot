@@ -6,6 +6,8 @@ General utilities.
 
 import numpy as np
 
+from common.msg import State, Control
+
 
 def rand_in_bounds(bounds, n):
     """Generate random samples within specified bounds
@@ -95,3 +97,79 @@ def wrap_angle(a):
 
     """
     return (a + np.pi) % (2 * np.pi) - np.pi
+
+
+def wrap_states(x_nom):
+    """Wraps a np array of nominal states into a vector of state msgs
+
+    Parameters
+    ----------
+    x_nom : np.array (Nx3 where N is trajectory length)
+        nominal states
+
+    Returns
+    -------
+    states : State[]
+        vector of state msgs
+
+    """
+    N = len(x_nom)
+    states = [None] * N
+
+    for i in range(N):
+        s = State()
+        s.x = x_nom[i,0]
+        s.y = x_nom[i,1]
+        s.theta = x_nom[i,2]
+        states[i] = s
+
+    return states
+
+
+def unwrap_states(states):
+    """Unwraps a vector of state msgs into a np array of nominal states
+
+    Parameters
+    ----------
+    states : State[]
+        vector of state msgs
+
+    Returns
+    -------
+    x_nom : np.array (Nx3 where N is trajectory length)
+        nominal states
+
+    """
+    N = len(states)
+    x_nom = np.zeros((N, 3))
+
+    for i, s in enumerate(states):
+        x_nom[i] = np.array([s.x, s.y, s.theta])
+
+    return x_nom
+
+
+def wrap_controls(u_nom):
+    """Wraps a np array of nominal controls into a vector of control msgs
+
+    Parameters
+    ----------
+    u_nom : np.array (Nx2 where N is trajectory length)
+        nominal controls
+
+    Returns
+    -------
+    controls : Control[]
+        vector of control msgs
+
+    """
+    N = u_nom.shape[1]
+    controls = [None] * N
+    
+    for i in range(N):
+        c = Control()
+        c.omega = u_nom[0][i]
+        c.a = u_nom[1][i]
+        controls[i] = c
+
+    return controls

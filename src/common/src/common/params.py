@@ -16,10 +16,12 @@ N_DIM = 2  # workspace dimension (i.e. 2D or 3D)
 R_BOT = 0.2  # [m]
 
 # Max velocity constraints [m/s]
-V_MAX = 0.25  # L1 velocity constraints
+V_MAX = 0.22  # L1 velocity constraints
 V_BOUNDS = np.tile(np.array([-V_MAX, V_MAX]), (1,N_DIM))[0]
-V_MAX_NORM = 0.25  # L2 velocity constraints
+V_MAX_NORM = 0.22  # L2 velocity constraints
 DELTA_V_PEAK_MAX = 0.7  # Delta from initial velocity constraint
+
+W_MAX = 1.0  # [rad/s] angular velocity constraint
 
 # Planning parameters
 R_GOAL_REACHED = 0.2  # [m] stop planning when within this dist of goal
@@ -30,5 +32,5 @@ MODEL_NAME = 'quadrotor_linear_planning_model.mat'
 P_0 = np.array([0, 0])  # Initial position
 P_GOAL = np.array([5, 0])  # Goal position
 
-OBSTACLES = [(np.array([3, 0]), 0.5),
+OBSTACLES = [(np.array([3, 0]), 0.25),
              (np.array([-4, 0]), 0.5)]

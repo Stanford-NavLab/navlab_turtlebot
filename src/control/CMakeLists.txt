@@ -161,6 +161,7 @@ include_directories(
 catkin_install_python(PROGRAMS
   nodes/open_loop_cmd_sender.py
   nodes/tracker.py
+  nodes/twist_sender.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

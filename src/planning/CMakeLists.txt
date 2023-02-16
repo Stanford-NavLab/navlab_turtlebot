@@ -176,6 +176,7 @@ target_link_libraries(planning
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   nodes/linear_planner.py
+  nodes/dubins_planner.py
   nodes/system_id.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
