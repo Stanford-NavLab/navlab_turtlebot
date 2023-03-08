@@ -110,7 +110,7 @@ catkin_python_setup()
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES local_planner
+LIBRARIES ${PROJECT_NAME}
  CATKIN_DEPENDS
    rospy
    std_msgs
@@ -136,7 +136,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(navlab_turtlebot_planning
+add_library(${PROJECT_NAME}
   src/local_planner.cpp
 )
 
