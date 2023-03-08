@@ -18,5 +18,16 @@ sudo apt-get install ros-"${ROS_DISTRO}"-turtlebot3 ros-"${ROS_DISTRO}"-move-bas
 7. Run `catkin build` from workspace root.
 
 ## Run
-1. `roslaunch navlab_turtlebot_base sim_flightroom_navigate.launch`
+1. `roslaunch navlab_turtlebot_base navigate_multi.launch`
 2. `rosrun planning linear_planner.py`
+
+
+## Troubleshooting
+If you get an error that says:
+```
+/usr/bin/env: ‘python’: No such file or directory
+```
+Then you may need to add a symlink so ROS can find your Python version. For example
+```
+sudo ln -s /usr/bin/python3 /usr/bin/python
+```

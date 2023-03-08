@@ -175,9 +175,6 @@ target_link_libraries(navlab_turtlebot_planning
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  nodes/linear_planner.py
-  nodes/dubins_planner.py
-  nodes/system_id.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
