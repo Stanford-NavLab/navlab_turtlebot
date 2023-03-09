@@ -9,7 +9,8 @@ System ID for turtlebot dynamics.
 import rospy
 import rospkg
 import numpy as np
-import time
+import os
+import time 
 from scipy.spatial.transform import Rotation as R
 
 from geometry_msgs.msg import Twist
@@ -23,11 +24,11 @@ import navlab_turtlebot_planning.utils as utils
 
 # Parameters
 N_DIM = 2  # number of dimensions
-T_PLAN = 5  # planned trajectory time duration [s]
+T_PLAN = 3.0  # planned trajectory time duration [s]
 DT = 0.1  # trajectory discretization time interval [s]
 N_PLAN = int(T_PLAN / DT)  # number of time steps in planned trajectory
 
-V_MAX = 0.25  # maximum velocity [m/s]
+V_MAX = 0.22  # maximum velocity [m/s]
 W_MAX = 1.0  # maximum angular velocity [rad/s]
 
 DATA_PATH = '/home/navlab-exxact/data/turtlebot_systemid/'
@@ -82,6 +83,7 @@ class SystemID:
 
 
     def run_once(self, v, w, cmd, log):
+        # TODO: add index parameter (idx)
         """Run once
         """
         cmd.linear.x = v
@@ -92,8 +94,10 @@ class SystemID:
             self.cmd_pub.publish(cmd)
             log[i,] = self.odom
             self.rate.sleep()
-
+==== BASE ====
+    
         np.save(DATA_PATH + f'v_{v:3.2f}_w_{w:2.1f}_{T_PLAN}s.npy', log)
+==== BASE ====
         self.reset_sim()
 
 
@@ -113,8 +117,10 @@ class SystemID:
 
         dv = 0.05
         dw = 0.1
-        for v in np.arange(-V_MAX, V_MAX+dv, dv):
-            for w in np.arange(-W_MAX, W_MAX+dw, dw):
+        # TODO: replace this double for loop with single for loop 
+        # pick some (v,w) and run it N = 100 (for loop over idx)
+        for v in np.arange(0, V_MAX + dv, dv):
+            for w in np.arange(-W_MAX, W_MAX + dw, dw):
                 self.run_once(v, w, cmd, log)
 
 

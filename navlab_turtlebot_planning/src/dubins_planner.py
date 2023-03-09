@@ -146,15 +146,15 @@ class DubinsPlanner:
             for obs_c, obs_r in self.obstacles:
                 dist = np.linalg.norm(traj[:,:-1] - obs_c, axis=1) - (obs_r + params.R_BOT)
                 dists.append(dist)
-            # for peer in self.peer_traj:
-            #     dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1) - (2 * params.R_BOT)
-            #     dists.append(dist)
+            for peer in self.peer_traj:
+                dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1) - (2 * params.R_BOT)
+                dists.append(dist)
             return np.hstack(dists)
 
         start_time = time.time()
         cons = NonlinearConstraint(constraint, 0, np.inf)
-        u0 = rand_in_bounds([-params.V_MAX, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
-        res = minimize(cost, u0, method='SLSQP', bounds=[(-params.V_MAX, params.V_MAX), (-params.W_MAX, params.W_MAX)], constraints=cons,
+        u0 = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
+        res = minimize(cost, u0, method='SLSQP', bounds=[(0, params.V_MAX), (-params.W_MAX, params.W_MAX)], constraints=cons, 
                     options={'disp': False,
                              'ftol': 1e-6})
         print("Time elapsed: {:.3f} s".format(time.time() - start_time))
@@ -243,8 +243,8 @@ class DubinsPlanner:
 
         # Find a new v_peak
         init_pose = self.odom
-        #u = self.traj_opt(init_pose, t_start_plan)
-        u = self.traj_opt_sample(init_pose, t_start_plan)
+        u = self.traj_opt(init_pose, t_start_plan)
+        #u = self.traj_opt_sample(init_pose, t_start_plan)
 
         if u is None:
             # Failed to find new plan
