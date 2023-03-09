@@ -28,7 +28,7 @@ class ZonotopePublisher():
 
         # Setup timer to publish map
         period = 1.0 / rospy.get_param('rate')
-        self.timer = self.create_timer(period,self.publish_map)
+        self.timer = rospy.Timer(period,self.publish_map)
 
     def publish_map(self):
         self.publisher.publish(self.zonotope_array)
