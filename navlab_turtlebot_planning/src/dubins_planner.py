@@ -243,8 +243,8 @@ class DubinsPlanner:
 
         # Find a new v_peak
         init_pose = self.odom
-        u = self.traj_opt(init_pose, t_start_plan)
-        #u = self.traj_opt_sample(init_pose, t_start_plan)
+        #u = self.traj_opt(init_pose, t_start_plan)
+        u = self.traj_opt_sample(init_pose, t_start_plan)
 
         if u is None:
             # Failed to find new plan

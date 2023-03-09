@@ -42,10 +42,10 @@ class SystemID:
         self.rate = rospy.Rate(1//DT)
 
         # cmd publisher
-        self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+        self.cmd_pub = rospy.Publisher('/turtlebot1/cmd_vel', Twist, queue_size=10)
 
         # Odometry subscriber
-        odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
+        odom_sub = rospy.Subscriber('/turtlebot1/odom', Odometry, self.odom_callback)
 
         self.odom = None  # [x, y, theta]
 
@@ -94,10 +94,12 @@ class SystemID:
             self.cmd_pub.publish(cmd)
             log[i,] = self.odom
             self.rate.sleep()
-==== BASE ====
-    
-        np.save(DATA_PATH + f'v_{v:3.2f}_w_{w:2.1f}_{T_PLAN}s.npy', log)
-==== BASE ====
+
+        datestr = time.strftime("%Y-%m-%d__%H-%M-%S")
+        if not os.path.exists(os.path.join(DATA_PATH, datestr)):
+            os.makedirs(os.path.join(DATA_PATH, datestr))
+        # TODO: add idx at end of file
+        np.save(os.path.join(DATA_PATH, datestr, f'v_{v:3.2f}_w_{w:2.1f}_{T_PLAN}s.npy'), log)
         self.reset_sim()
 
 
