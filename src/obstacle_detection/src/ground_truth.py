@@ -1,28 +1,33 @@
-import rclpy
-from rclpy.node import Node
+#!/usr/bin/env python
+
+import rospy
+#import rclpy
+#from rclpy.node import Node
 from multi_rtd_interfaces.msg import ZonotopeMsg, ZonotopeMsgArray
 
 from world_parser import WorldParser
 import numpy as np
 
-class ZonotopePublisher(Node):
+class ZonotopePublisher():
 
     def __init__(self):
-        super().__init__('ground_truth_obstacle_publisher')
+        #super().__init__('ground_truth_obstacle_publisher')
+        rospy.init_node('ground_truth_obstacle_publisher')
 
-        self.name = self.get_namespace()
-        self.publisher = self.create_publisher(ZonotopeMsgArray,self.name + 'map/zonotopes',10)
+        self.name = rospy.get_namespace()
+        #self.publisher = self.create_publisher(ZonotopeMsgArray,self.name + 'map/zonotopes',10)
+        self.publisher = rospy.Publisher(ZonotopeMsgArray,self.name + 'map/zonotopes',queue_size=10)
 
         # Set node parameters
-        self.declare_parameter('worldfile','/home/navlab-exxact-18/PX4-Autopilot/Tools/sitl_gazebo/worlds/static_forest.world')
-        self.declare_parameter('rate',1.0)
+        rospy.set_param('worldfile','/home/navlab-exxact-18/PX4-Autopilot/Tools/sitl_gazebo/worlds/static_forest.world')
+        rospy.set_param('rate',1.0)
 
         # Use worldfile parameter to get zonotopes
         self.zonotopes = self.get_zonotopes()
         self.zonotope_array = self.get_zonotope_array()
 
         # Setup timer to publish map
-        period = 1.0 / self.get_parameter('rate').value
+        period = 1.0 / rospy.get_param('rate')
         self.timer = self.create_timer(period,self.publish_map)
 
     def publish_map(self):
@@ -47,14 +52,14 @@ class ZonotopePublisher(Node):
         return zon_arr
 
 def main(args=None):
-    rclpy.init(args=args)
+    rospy.init(args=args)
 
     map_publisher = ZonotopePublisher()
 
-    rclpy.spin(map_publisher)
+    rospy.spin(map_publisher)
 
     map_publisher.destroy_node()
-    rclpy.shutdown()
+    rospy.shutdown()
 
 if __name__ == "__main__":
     main()
