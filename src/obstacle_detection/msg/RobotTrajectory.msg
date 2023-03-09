@@ -1,0 +1,2 @@
+string robot_name
+trajectory_msgs/JointTrajectory trajectory
