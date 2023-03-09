@@ -173,3 +173,20 @@ def wrap_controls(u_nom):
         controls[i] = c
 
     return controls
+
+
+def rot_mat_2D(theta):
+    """2D rotation matrix
+    
+    Parameters
+    ----------
+    theta : float
+        Rotation angle in radians
+    
+    Returns
+    -------
+    np.array
+        2D rotation matrix
+    """
+    return np.array([[np.cos(theta), -np.sin(theta)],
+                     [np.sin(theta), np.cos(theta)]])

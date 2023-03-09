@@ -18,7 +18,7 @@ from scipy.spatial.transform import Rotation as R
 from nav_msgs.msg import Odometry
 
 import common.params as params
-from common.utils import rand_in_bounds, wrap_states, unwrap_states
+from common.utils import rand_in_bounds, wrap_states, unwrap_states, rot_mat_2D
 from common.msg import Control, NominalTrajectory
 from planning.dubins_planning_model import dubins_traj
 
@@ -63,12 +63,13 @@ class DubinsPlanner:
             self.p_goal = np.array([5, 0])
             self.peers = ['turtlebot2']
         elif self.name == 'turtlebot2':
-            self.p_0 = np.array([5, 0, 0])
+            self.p_0 = np.array([5, 0, np.pi])
             self.p_goal = np.array([0, 0])
             self.peers = ['turtlebot1']
         else:
             self.p_0 = np.array([0, 0, 0])
             self.p_goal = np.array([5, 0])
+            self.peers = []
 
         # Subscribe to peer trajectories
         for peer in self.peers:
@@ -79,6 +80,13 @@ class DubinsPlanner:
         self.obstacles = params.OBSTACLES
 
         self.done = False  # Done planning flag
+
+        # Pre-sample trajectories
+        self.u_samples = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
+        self.traj_samples = np.zeros((params.N_PLAN_MAX, params.TRAJ_IDX_LEN, 3))
+
+        for i, u in enumerate(self.u_samples):
+            self.traj_samples[i,:,:] = dubins_traj(np.zeros(3), u, params.TRAJ_IDX_LEN, params.DT)
 
 
 
@@ -138,32 +146,39 @@ class DubinsPlanner:
             for obs_c, obs_r in self.obstacles:
                 dist = np.linalg.norm(traj[:,:-1] - obs_c, axis=1) - (obs_r + params.R_BOT)
                 dists.append(dist)
-            for peer in self.peer_traj:
-                dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1) - (2 * params.R_BOT)
-                dists.append(dist)
+            # for peer in self.peer_traj:
+            #     dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1) - (2 * params.R_BOT)
+            #     dists.append(dist)
             return np.hstack(dists)
 
         start_time = time.time()
         cons = NonlinearConstraint(constraint, 0, np.inf)
         u0 = rand_in_bounds([-params.V_MAX, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
-        res = minimize(cost, np.array([0, 0]), method='SLSQP', bounds=[(-params.V_MAX, params.V_MAX), (-params.W_MAX, params.W_MAX)], constraints=cons, 
+        res = minimize(cost, u0, method='SLSQP', bounds=[(-params.V_MAX, params.V_MAX), (-params.W_MAX, params.W_MAX)], constraints=cons, 
                     options={'disp': False,
                              'ftol': 1e-6})
         print("Time elapsed: {:.3f} s".format(time.time() - start_time))
         print(res.x)
-        return res.x
+        mean = [0,0]                                                               # test line
+        covariance = [[0,0], [0,.01]]                                              # test line
+        return res.x + np.random.multivariate_normal(mean,covariance)              # test line
+        #return res.x                                                              # original line
     
 
     def check_collisions(self, traj):
-        """Check if the trajectory collides with any obstacles."""
+        """Check if the trajectory collides with any obstacles or peer trajectories."""
         for obs_c, obs_r in self.obstacles:
             dist = np.linalg.norm(traj[:,:-1] - obs_c, axis=1)
-            if np.any(dist < obs_r):
+            if np.any(dist < obs_r + params.R_BOT):
                 return True
-        return False
+        for peer in self.peer_traj:
+            dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1)
+            if np.any(dist < 2 * params.R_BOT):
+                return True
+        return False 
 
 
-    def traj_opt_sample(self, t_start_plan):
+    def traj_opt_sample(self, init_pose, t_start_plan):
         """Sampling-based Trajectory Optimization
 
         Attempt to find a collision-free plan (v_peak) which brings the agent 
@@ -181,19 +196,32 @@ class DubinsPlanner:
         
         """
         start_time = time.time()
-        u_samples = rand_in_bounds([-params.V_MAX, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
-        endpoints = np.zeros((params.N_PLAN_MAX, 2))
-        for i, u in enumerate(u_samples):
-            traj = dubins_traj(self.p_0, u, params.TRAJ_IDX_LEN, params.DT)
-            endpoints[i] = traj[-1,:-1]
+        # u_samples = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
+        # traj_samples = np.zeros((params.N_PLAN_MAX, params.TRAJ_IDX_LEN, 3))
+        # for i, u in enumerate(u_samples):
+        #     traj_samples[i,:,:] = dubins_traj(self.p_0, u, params.TRAJ_IDX_LEN, params.DT)
+        #     endpoints[i] = traj[-1,:-1]
 
+        # endpoints = traj_samples[:,-1,:-1]
+        # dists = np.linalg.norm(endpoints - self.p_goal, axis=1)
+        # sort_idxs = np.argsort(dists)
+        # u_samples_sorted = u_samples[sort_idxs]
+        # traj_samples_sorted = traj_samples[sort_idxs]
+
+        # Transform samples to global frame using init_pose
+        traj_samples_global = self.traj_samples.copy()
+        traj_samples_global[:,:,0:2] = traj_samples_global[:,:,0:2] @ rot_mat_2D(init_pose[2]).T  # rotate
+        traj_samples_global += init_pose  # translate
+
+        endpoints = traj_samples_global[:,-1,:-1]
         dists = np.linalg.norm(endpoints - self.p_goal, axis=1)
         sort_idxs = np.argsort(dists)
-        u_samples_sorted = u_samples[sort_idxs]
+        u_samples_sorted = self.u_samples[sort_idxs]
+        traj_samples_sorted = traj_samples_global[sort_idxs]
 
         # Check collisions
-        for u in u_samples_sorted:
-            traj = dubins_traj(self.p_0, u, params.TRAJ_IDX_LEN, params.DT)
+        for i, u in enumerate(u_samples_sorted):
+            traj = traj_samples_sorted[i]
             if self.check_collisions(traj):
                 continue
             else:
@@ -215,7 +243,8 @@ class DubinsPlanner:
 
         # Find a new v_peak
         init_pose = self.odom
-        u = self.traj_opt(init_pose, t_start_plan)
+        #u = self.traj_opt(init_pose, t_start_plan)
+        u = self.traj_opt_sample(init_pose, t_start_plan)
 
         if u is None:
             # Failed to find new plan
