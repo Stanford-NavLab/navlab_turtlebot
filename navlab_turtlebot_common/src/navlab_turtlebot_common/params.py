@@ -3,7 +3,7 @@ import numpy as np
 # Timing parameters
 DT = 0.1  # [s] trajectory time discretization
 T_REPLAN = 0.5  # [s] amount of time between replans
-T_PLAN = 0.4  # [s] amount of time allotted for planning itself 
+T_PLAN = 0.5  # [s] amount of time allotted for planning itself 
               #     (allow buffer for actual tranmission of plan)
 TRAJ_TIME_LEN = 3.0  # [s] Trajectory total duration
 TRAJ_IDX_LEN = int(TRAJ_TIME_LEN / DT) + 1  # Trajectory length in timestep
@@ -13,7 +13,7 @@ NEXT_IC_IDX = int(T_REPLAN / DT)  # Index in trajectory for next set of replanni
 
 # Robot parameters
 N_DIM = 2  # workspace dimension (i.e. 2D or 3D)
-R_BOT = 0.2  # [m]
+R_BOT = 0.4  # [m]
 
 # Max velocity constraints [m/s]
 V_MAX = 0.22  # L1 velocity constraints
