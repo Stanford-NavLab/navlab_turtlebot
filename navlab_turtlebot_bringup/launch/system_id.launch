@@ -1,0 +1,42 @@
+<launch>
+
+  # if true uses Gazebo, if false setup for Stanford flightroom
+  <arg name="sim" default="true"/>
+  # turtlebot model type
+  <arg name="model" default="burger"/>
+  # whether or not to open rviz
+  <arg name="open_rviz" default="true"/>
+  # parameters for start and goal locations
+  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/one_origin.yaml"/>
+
+  <!-- Load Turtlebot starting positions and goal locations -->
+  <rosparam command="load" file="$(arg goal_file)" />
+
+  <!-- load empty gazebo world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find gazebo_ros)/worlds/empty.world"/>
+    <arg name="paused" value="false"/>
+    <arg name="use_sim_time" value="true"/>
+    <arg name="gui" value="true"/>
+    <arg name="headless" value="false"/>
+    <arg name="debug" value="false"/>
+  </include>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+
+  <!-- BEGIN ROBOT 1-->
+  <group ns="turtlebot1">
+      <param name="tf_prefix" value="turtlebot1_tf" />
+      <include file="$(find navlab_turtlebot_bringup)/launch/one_robot.launch" >
+      <arg name="robot_name"  value="turtlebot1" />
+      <arg name="sim"  value="$(arg sim)" />
+      </include>
+  </group>
+
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"/>
+  </group>
+
+</launch>
