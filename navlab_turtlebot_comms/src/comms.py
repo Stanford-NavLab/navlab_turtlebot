@@ -8,16 +8,21 @@ from common.msg import NominalTrajectory
 from common.msg import State
 import common.params as params
 from planning.utils import check_obs_collision
+from navlab_turtlebot_obstacles.msg import ZonotopeMsg, ZonotopeMsgArray
 
 obstacles = params.OBSTACLES
 robot1 = NominalTrajectory()
 robot2 = NominalTrajectory()
+zonotopes = []
 
 def robot1_cb(data):
     robot1 = data
 
 def robot2_cb(data):
     robot2 = data
+
+def zonotope_cb(data):
+    zonotopes = data
 
 def check_occlusions():
     print(robot2)
@@ -39,6 +44,7 @@ def comms():
     while not rospy.is_shutdown():
         rospy.Subscriber('/turtlebot1/planner/traj',NominalTrajectory,robot1_cb)
         rospy.Subscriber('/turtlebot2/planner/traj',NominalTrajectory,robot2_cb)
+        rospy.Subscriber('/map/Zonotopes',ZonotopeMsgArray,zonotope_cb)
         # Probability 1% of comms dropping each .1 sec, comms drop for occlusions
         if True: #check_occlusions():
             no_comms = np.random.choice([0,1],size=(1,2),p=[.99,.01])

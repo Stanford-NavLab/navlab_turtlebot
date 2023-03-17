@@ -3,7 +3,7 @@
 import rospy
 #import rclpy
 #from rclpy.node import Node
-from multi_rtd_interfaces.msg import ZonotopeMsg, ZonotopeMsgArray
+from navlab_turtlebot_obstacles.msg import ZonotopeMsg, ZonotopeMsgArray
 
 from world_parser import WorldParser
 import numpy as np
@@ -15,11 +15,13 @@ class ZonotopePublisher():
         rospy.init_node('ground_truth_obstacle_publisher')
 
         self.name = rospy.get_namespace()
+        # Not sure why this line was necessary ^^
+
         #self.publisher = self.create_publisher(ZonotopeMsgArray,self.name + 'map/zonotopes',10)
-        self.publisher = rospy.Publisher(ZonotopeMsgArray,self.name + 'map/zonotopes',queue_size=10)
+        self.publisher = rospy.Publisher(self.name+'map/zonotopes',ZonotopeMsgArray, queue_size=10)
 
         # Set node parameters
-        rospy.set_param('worldfile','/home/navlab-exxact-18/PX4-Autopilot/Tools/sitl_gazebo/worlds/static_forest.world')
+        rospy.set_param('worldfile','/home/izzie/catkin_ws/src/navlab_turtlebot_base/worlds/flightroom_obstacles.world')
         rospy.set_param('rate',1.0)
 
         # Use worldfile parameter to get zonotopes
@@ -28,13 +30,13 @@ class ZonotopePublisher():
 
         # Setup timer to publish map
         period = 1.0 / rospy.get_param('rate')
-        self.timer = rospy.Timer(period,self.publish_map)
+        self.timer = rospy.Timer(rospy.Duration(period),self.publish_map)
 
-    def publish_map(self):
+    def publish_map(self, event=None):
         self.publisher.publish(self.zonotope_array)
 
     def get_zonotopes(self):
-        worldfile = self.get_parameter('worldfile').value
+        worldfile = rospy.get_param('worldfile')
         parser = WorldParser(worldfile)
         return parser.allZonotopes()
 
@@ -52,14 +54,14 @@ class ZonotopePublisher():
         return zon_arr
 
 def main(args=None):
-    rospy.init(args=args)
+    #rospy.init(args=args) -> changed to just init_node, called in __init__
 
     map_publisher = ZonotopePublisher()
 
-    rospy.spin(map_publisher)
+    rospy.spin()
 
-    map_publisher.destroy_node()
-    rospy.shutdown()
+    #map_publisher.destroy_node()
+    #rospy.shutdown()
 
 if __name__ == "__main__":
     main()
