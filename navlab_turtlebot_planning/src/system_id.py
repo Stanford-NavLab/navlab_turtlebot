@@ -28,10 +28,10 @@ T_PLAN = 3.0  # planned trajectory time duration [s]
 DT = 0.1  # trajectory discretization time interval [s]
 N_PLAN = int(T_PLAN / DT)  # number of time steps in planned trajectory
 
-V_MAX = 0.22  # maximum velocity [m/s]
+V_MAX = 0.2  # maximum velocity [m/s]
 W_MAX = 1.0  # maximum angular velocity [rad/s]
 
-DATA_PATH = '/home/navlab-exxact/data/turtlebot_systemid/'
+DATA_PATH = '/home/navlab-exxact/data/turtlebot_systemid'
 
 class SystemID:
     """SystemID class
@@ -78,40 +78,42 @@ class SystemID:
             reset_proxy()
             rospy.sleep(2)
             reset_proxy()  # Reset twice to handle leftover inertia
+            rospy.sleep(2)
         except rospy.ServiceException as e:
             print("Service call failed: %s"%e)
 
 
-    def run_once(self, v, w, cmd, log):
-        # TODO: add index parameter (idx)
+    def run_once(self, v, w, cmd, log, datestr, idx):
         """Run once
         """
         cmd.linear.x = v
         cmd.angular.z = w
 
-        print(f"Publishing cmd v = {v}, w = {w}")
+        print(f"Publishing cmd v = {v}, w = {w}, idx = {idx}")
         for i in range(N_PLAN):
             self.cmd_pub.publish(cmd)
             log[i,] = self.odom
             self.rate.sleep()
 
-        datestr = time.strftime("%Y-%m-%d__%H-%M-%S")
-        if not os.path.exists(os.path.join(DATA_PATH, datestr)):
-            os.makedirs(os.path.join(DATA_PATH, datestr))
-        # TODO: add idx at end of file
-        np.save(os.path.join(DATA_PATH, datestr, f'v_{v:3.2f}_w_{w:2.1f}_{T_PLAN}s.npy'), log)
+        if not os.path.exists(os.path.join(DATA_PATH, datestr, f'v_{v:3.2f}_w_{w:2.1f}')):
+            os.makedirs(os.path.join(DATA_PATH, datestr, f'v_{v:3.2f}_w_{w:2.1f}'))
+        np.save(os.path.join(DATA_PATH, datestr, f'v_{v:3.2f}_w_{w:2.1f}', f'v_{v:3.2f}_w_{w:2.1f}_{T_PLAN}s_idx{idx}.npy'), log)
         self.reset_sim()
 
 
     def run(self):
         """Run
         """
-        # v = 0.25
-        # w = 0.1
+        v = 0.2
+        w = 0.5
         cmd = Twist()
         # cmd.linear.x = v
         # cmd.angular.z = w
         log = np.zeros((N_PLAN, 3))  # x, y, theta
+
+        datestr = time.strftime("%Y-%m-%d__%H-%M-%S")
+        if not os.path.exists(os.path.join(DATA_PATH, datestr)):
+            os.makedirs(os.path.join(DATA_PATH, datestr))
 
         # Wait until we have odometry
         while self.odom is None:
@@ -119,11 +121,12 @@ class SystemID:
 
         dv = 0.05
         dw = 0.1
-        # TODO: replace this double for loop with single for loop 
-        # pick some (v,w) and run it N = 100 (for loop over idx)
-        for v in np.arange(0, V_MAX + dv, dv):
-            for w in np.arange(-W_MAX, W_MAX + dw, dw):
-                self.run_once(v, w, cmd, log)
+        # for v in np.arange(V_MAX, 0-dv, -dv):               
+        #     for w in np.arange(-W_MAX, W_MAX + dw, dw):     
+        #         for idx in range(100):
+        #             self.run_once(v, w, cmd, log, datestr, idx)            
+        for idx in range(100):
+           self.run_once(v, w, cmd, log, datestr, idx)            
 
 
 if __name__ == '__main__':

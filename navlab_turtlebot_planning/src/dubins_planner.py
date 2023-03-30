@@ -196,17 +196,6 @@ class DubinsPlanner:
 
         """
         start_time = time.time()
-        # u_samples = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
-        # traj_samples = np.zeros((params.N_PLAN_MAX, params.TRAJ_IDX_LEN, 3))
-        # for i, u in enumerate(u_samples):
-        #     traj_samples[i,:,:] = dubins_traj(self.p_0, u, params.TRAJ_IDX_LEN, params.DT)
-        #     endpoints[i] = traj[-1,:-1]
-
-        # endpoints = traj_samples[:,-1,:-1]
-        # dists = np.linalg.norm(endpoints - self.p_goal, axis=1)
-        # sort_idxs = np.argsort(dists)
-        # u_samples_sorted = u_samples[sort_idxs]
-        # traj_samples_sorted = traj_samples[sort_idxs]
 
         # Transform samples to global frame using init_pose
         traj_samples_global = self.traj_samples.copy()
