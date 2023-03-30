@@ -18,8 +18,16 @@ sudo apt-get install ros-"${ROS_DISTRO}"-turtlebot3 ros-"${ROS_DISTRO}"-move-bas
 7. Run `catkin build` from workspace root.
 
 ## Run
+Two robot position exchange
 1. `roslaunch navlab_turtlebot_base navigate_multi.launch`
-2. `rosrun planning linear_planner.py`
+  - `robot_count` = 4
+  - `goal_file` = `two_swap.yaml`
+2. Start the controllers
+  - `rosrun navlab_turtlebot_control twist_sender.py -n turtlebot1`
+  - `rosrun navlab_turtlebot_control twist_sender.py -n turtlebot2`
+3. Start the planners  
+  - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot1`
+  - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot2`
 
 
 ## Troubleshooting
