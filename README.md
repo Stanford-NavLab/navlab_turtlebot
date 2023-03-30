@@ -13,12 +13,13 @@ pip3 install --user empy catkin-pkg rospkg
 ```
 sudo apt-get install ros-"${ROS_DISTRO}"-turtlebot3 ros-"${ROS_DISTRO}"-move-base ros-"${ROS_DISTRO}"-teb-local-planner
 ```
+  a. If setting up base station, also `ros-"${ROS_DISTRO}"-vrpn-client-ros`.
 5. Create a ROS workspace and clone this repo into the `src/` folder of your workspace.
-6. Additionally (also in `src/`), clone https://github.com/Stanford-NavLab/navlab_turtlebot_base.
+  a. If base station, additionally (also in `src/`), clone https://github.com/Stanford-NavLab/navlab_turtlebot_base.
 7. Run `catkin build` from workspace root.
 
 ## Run
-Two robot position exchange
+Gazebo two robot position exchange
 1. `roslaunch navlab_turtlebot_base navigate_multi.launch`
   - `robot_count` = 4
   - `goal_file` = `two_swap.yaml`
