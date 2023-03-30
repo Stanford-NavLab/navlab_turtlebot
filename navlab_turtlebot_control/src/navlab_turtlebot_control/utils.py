@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 
 from navlab_turtlebot_common.utils import wrap_angle
+import navlab_turtlebot_common.params as params
 
 
 def compute_control(x_nom, u_nom, x_hat, K):
@@ -58,7 +59,7 @@ def EKF_prediction_step(x_hat, u, P, A, Q, dt):
         predicted state estimation covariance matrix
     """
     # Compute predicted state
-    x_pred = x_hat + np.array([ [x_hat[3,0]*np.cos(x_hat[2,0])], [x_hat[3,0]*np.sin(x_hat[2,0])], [u[0,0]], [u[1,0]] ])*dt;
+    x_pred = x_hat + np.array([u[0] * np.cos(x_hat[2]), u[0] * np.sin(x_hat[2]), u[1]]) * dt
     # Compute predicted state estimation covariance matrix
     P_pred = A @ P @ A.T + Q
 
@@ -124,20 +125,18 @@ def dlqr_calculate(G, H, Q, R):
     return K
 
 
-def generate_robot_matrices(x_nom, u_nom, Q_lqr, R_lqr, dt):
+def generate_robot_matrices(x, u):
     """Generate A, B, C and K matrices for robot based on given nominal state and input vector.
+
+    TODO: replace with linearized dynamics from multirobot-planning
+
     Parameters
     ----------
     x_nom : np.array (4x1)
         nominal state
     u_nom : np.array (2x1)
         nominal input
-    Q_lqr : np.array (4x4)
-        LQR state cost weight matrix
-    R_lqr: np.array (2x2)
-        LQR input cost weight matrix
-    dt: float
-        discrete time-step
+
     Returns
     -------
     A : np.array (4x4)
@@ -148,32 +147,24 @@ def generate_robot_matrices(x_nom, u_nom, Q_lqr, R_lqr, dt):
         Measurement matrix.
     K : np.array (2x4)
         Control feedback gain matrix.
+
     """
-    # Get state dimension. 
-    state_dim = x_nom.shape[0]
-    input_dim = u_nom.shape[0]
-    measurement_dim = 3  # assuming 2D position and heading measurement
-
-    # Form linearized motion model matrix
-    A = np.identity((state_dim))
-    A[0,2] = -x_nom[3,0]*np.sin(x_nom[2,0])*dt
-    A[0,3] = np.cos(x_nom[2,0])*dt
-    A[1,2] = x_nom[3,0]*np.cos(x_nom[2,0])*dt
-    A[1,3] = np.sin(x_nom[2,0])*dt
-
-    # Form linearized control input matrix
-    B = np.zeros((state_dim,input_dim))
-    B[2,0] = dt; B[3,1] = dt
+    A = np.array([[1, 0, -u[0] * np.sin(x[2]) * params.DT],
+                  [0, 1,  u[0] * np.cos(x[2]) * params.DT],
+                  [0, 0, 1]])
+    B = np.array([[np.cos(x[2]) * params.DT, -0.5 * u[0] * params.DT**2 * np.sin(x[2])],
+                  [np.sin(x[2]) * params.DT,  0.5 * u[0] * params.DT**2 * np.cos(x[2])],
+                  [0, params.DT]])
 
     # Form measurement matrix
-    C = np.zeros((measurement_dim, state_dim))
-    C[0,0] = 1; C[1,1] = 1; C[2,2] = 1
+    C = np.eye(3)  # mocap gives (x, y, theta)
 
     # Compute control feedback gain matrix
-    if np.abs(x_nom[3,0]) > 0.01:  # if there is sufficient speed for controllability
-        K = dlqr_calculate(A, B, Q_lqr, R_lqr)
-    else:
-        K = np.array([[0, 0, 1.0, 0], 
-                      [0, 0, 0, 1.0]])  # tuned from flight room tests
+    K = dlqr_calculate(A, B, params.Q_LQR, params.R_LQR)
+    # if np.abs(x_nom[3,0]) > 0.01:  # if there is sufficient speed for controllability
+    #     K = dlqr_calculate(A, B, params.Q_LQR, params.R_LQR)
+    # else:
+    #     K = np.array([[0, 0, 1.0, 0], 
+    #                   [0, 0, 0, 1.0]])  # tuned from flight room tests
 
     return A, B, C, K

@@ -21,7 +21,7 @@ class Mocap():
         self.name = name
         
         # Initialize node 
-        node_name = self.name + '_mocap' if self.name else 'mocap'
+        node_name = name + '_mocap' if name else 'mocap'
         rospy.init_node(node_name, anonymous=True)
         self.rate = rospy.Rate(10)
 
@@ -29,14 +29,14 @@ class Mocap():
         self.x = 0
         self.y = 0
         self.theta = 0
-        self.x_std = np.sqrt(params.R_EKF_DIAG[0])
-        self.y_std = np.sqrt(params.R_EKF_DIAG[1])
-        self.theta_std = np.sqrt(params.R_EKF_DIAG[2])
+        self.x_std = params.MOCAP_SIGMA[0]
+        self.y_std = params.MOCAP_SIGMA[1]
+        self.theta_std = params.MOCAP_SIGMA[2]
 
         # Publishers and subscribers
         vrpn_sub = rospy.Subscriber(f'vrpn_client_node/{name}/pose', PoseStamped, self.vrpn_callback)
-        self.mocap_pub = rospy.Publisher(self.name + '/sensing/mocap', State, queue_size=1)
-        self.mocap_noisy_pub = rospy.Publisher(self.name + '/sensing/mocap_noisy', State, queue_size=1)
+        self.mocap_pub = rospy.Publisher('/' + name + '/sensing/mocap', State, queue_size=1)
+        self.mocap_noisy_pub = rospy.Publisher('/' + name + '/sensing/mocap_noisy', State, queue_size=1)
 
 
     def vrpn_callback(self, data):
@@ -64,14 +64,12 @@ class Mocap():
         s.x = self.x
         s.y = self.y
         s.theta = self.theta
-        s.v = 0.0  # no velocity measurement
         self.mocap_pub.publish(s)
 
         s = State()
         s.x = self.x + np.random.normal(0, self.x_std)
         s.y = self.y + np.random.normal(0, self.y_std)
         s.theta = self.theta + np.random.normal(0, self.theta_std)
-        s.v = 0.0  # no velocity measurement
         self.mocap_noisy_pub.publish(s)
 
 

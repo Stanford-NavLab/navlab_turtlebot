@@ -19,7 +19,7 @@ from nav_msgs.msg import Odometry
 
 import navlab_turtlebot_common.params as params
 from navlab_turtlebot_common.utils import rand_in_bounds, wrap_states, unwrap_states, rot_mat_2D
-from navlab_turtlebot_common.msg import Control, NominalTrajectory
+from navlab_turtlebot_common.msg import State, Control, NominalTrajectory
 from navlab_turtlebot_planning.dubins_planning_model import dubins_traj
 
 
@@ -39,22 +39,23 @@ class DubinsPlanner:
     -------
 
     """
-    def __init__(self, name='/'):
+    def __init__(self, name=''):
         self.name = name
 
-        # Initialize node
-        rospy.init_node(self.name + 'dubins_planner', disable_signals=True)
+        # Initialize node 
+        rospy.init_node(name + '_dubins_planner', disable_signals=True)
         self.rate = rospy.Rate(10)
 
         # Replan timer
         rospy.Timer(rospy.Duration(params.T_REPLAN), self.replan)
 
         # Publishers
-        self.traj_pub = rospy.Publisher(self.name + '/planner/traj', NominalTrajectory, queue_size=10)
+        self.traj_pub = rospy.Publisher('/' + name + '/planner/traj', NominalTrajectory, queue_size=10)
         self.traj_msg = None
 
         # Subscribers
-        odom_sub = rospy.Subscriber(self.name + '/odom', Odometry, self.odom_callback)
+        #odom_sub = rospy.Subscriber(self.name + '/odom', Odometry, self.odom_callback)
+        mocap_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.mocap_callback)
         self.odom = None  # [x, y, theta]
 
         # Initial state (x, y, theta) and goal position (x, y)
@@ -66,6 +67,9 @@ class DubinsPlanner:
             self.p_0 = np.array([5, 0, np.pi])
             self.p_goal = np.array([0, 0])
             self.peers = ['turtlebot1']
+        elif self.name == 'turtlebot4':
+            self.p_goal = np.array([1, 0])
+            self.peers = []
         else:
             self.p_0 = np.array([0, 0, 0])
             self.p_goal = np.array([5, 0])
@@ -73,7 +77,7 @@ class DubinsPlanner:
 
         # Subscribe to peer trajectories
         for peer in self.peers:
-            traj_sub = rospy.Subscriber(peer + '/planner/traj', NominalTrajectory, self.traj_callback, callback_args=peer)
+            traj_sub = rospy.Subscriber('/' + peer + '/planner/traj', NominalTrajectory, self.traj_callback, callback_args=peer)
         self.peer_traj = {}
 
         # Obstacles
@@ -116,6 +120,12 @@ class DubinsPlanner:
         r = R.from_quat(q)
         theta = r.as_euler('xyz')[2]
         self.odom = np.array([x, y, theta])
+
+
+    def mocap_callback(self, msg):
+        """
+        """
+        self.odom = np.array([msg.x, msg.y, msg.theta])
 
 
     def traj_opt(self, init_pose, t_start_plan):
@@ -195,6 +205,7 @@ class DubinsPlanner:
             Optimal v_peak or None if failed to find one
 
         """
+        print(init_pose)
         start_time = time.time()
 
         # Transform samples to global frame using init_pose

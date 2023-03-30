@@ -17,16 +17,18 @@ import navlab_turtlebot_common.params as params
 
 class LQGTracker():
     """LQG tracker
+
     Tracks nominal trajectories by applying linear control feedback using
     state estimate and sending motor commands. If a new trajectory is received
     while tracking the current trajectory, it will switch to tracking the new
     trajectory once it has finished the current trajectory.
+
     """
     def __init__(self, name=''):
         self.name = name
 
         # Initialize node
-        node_name = self.name + '_LQG_tracker' if self.name else 'LQG_tracker'
+        node_name = name + '_LQG_tracker' if name else 'LQG_tracker'
         rospy.init_node(node_name, anonymous=True)
         self.rate = rospy.Rate(1/params.DT)
 
@@ -35,7 +37,7 @@ class LQGTracker():
         self.X_nom = None
         self.u_nom = None
 
-        self.x_hat = np.zeros((4,1))  # state estimate
+        self.x_hat = None  # state estimate
         self.P = params.P_0  # covariance
 
         self.z = np.zeros((3,1))  # measurement
@@ -46,25 +48,24 @@ class LQGTracker():
         self.new_traj_flag = False
 
         # Publishers
-        self.cmd_pub = rospy.Publisher(self.name + '/cmd_vel', Twist, queue_size=10)
+        self.cmd_pub = rospy.Publisher('/' + name + '/cmd_vel', Twist, queue_size=10)
 
         # Subscribers
-        traj_sub = rospy.Subscriber(self.name + '/planner/traj', NominalTrajectory, self.traj_callback)
-        measurement_sub = rospy.Subscriber('sensing/mocap_noisy', State, self.measurement_callback)
-        gt_sub = rospy.Subscriber('sensing/mocap', State, self.gt_callback)
+        traj_sub = rospy.Subscriber('/' + name + '/planner/traj', NominalTrajectory, self.traj_callback)
+        measurement_sub = rospy.Subscriber('/' + name + '/sensing/mocap_noisy', State, self.measurement_callback)
+        gt_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.gt_callback)
 
         # Logging
-        path = '/home/navlab-nuc/Rover/flightroom_data/4_12_2022/debug/'
-        filename = 'track_'+str(rospy.get_time())+'.csv'
-        self.logger = csv.writer(open(os.path.join(path, filename), 'w'))
-        self.logger.writerow(['t', 'x', 'y', 'theta', 'z_x', 'z_y', 'z_theta',
-                              'x_nom', 'y_nom', 'theta_nom', 'v_nom',
-                              'x_hat', 'y_hat', 'theta_hat', 'v_hat', 'u_w', 'u_a'])
+        # path = '/home/navlab-nuc/Rover/flightroom_data/4_12_2022/debug/'
+        # filename = 'track_'+str(rospy.get_time())+'.csv'
+        # self.logger = csv.writer(open(os.path.join(path, filename), 'w'))
+        # self.logger.writerow(['t', 'x', 'y', 'theta', 'z_x', 'z_y', 'z_theta',
+        #                       'x_nom', 'y_nom', 'theta_nom', 'v_nom',
+        #                       'x_hat', 'y_hat', 'theta_hat', 'v_hat', 'u_w', 'u_a'])
 
 
     def traj_callback(self, data):
         """Trajectory subscriber callback.
-        Save nominal states and controls from received trajectory.
         """
         self.X_nom = data.states
         self.u_nom = data.control
@@ -73,18 +74,19 @@ class LQGTracker():
 
     def measurement_callback(self, data):
         """Measurement subscriber callback.
-        Save received measurement.
         """
         # For mocap measurement
-        self.z = np.array([[data.x],[data.y],[data.theta]])
+        self.z = np.array([data.x, data.y, data.theta])
+        # Intialize x_hat
+        if self.x_hat is None:
+            self.x_hat = self.z
 
 
     def gt_callback(self, data):
         """Ground-truth subscriber callback.
-        Save received ground-truth.
         """
         # Mocap data
-        self.z_gt = np.array([[data.x],[data.y],[data.theta]])
+        self.z_gt = np.array([data.x, data.y, data.theta])
 
 
     def track(self):
@@ -98,11 +100,7 @@ class LQGTracker():
         u_nom_msg = self.u_nom
         u_nom = np.array([u_nom_msg.v, u_nom_msg.omega])
 
-        # Start of first segment
-        if self.idx == 0 and self.seg_num == 1:
-            self.x_hat = x_nom
-
-        A,B,C,K = generate_robot_matrices(x_nom, u_nom, params.Q_LQR, params.R_LQR, params.DT)
+        A, B, C, K = generate_robot_matrices(x_nom, u_nom)
         # K = np.array([[0, 0, 1, 0],
         #               [0, 0, 0, 1]])
 
@@ -157,7 +155,7 @@ class LQGTracker():
         rospy.loginfo("Running LQG Tracker")
         while not rospy.is_shutdown():
 
-            if self.X_nom_curr is not None:
+            if self.X_nom is not None:
                 self.track()
 
             self.rate.sleep()
