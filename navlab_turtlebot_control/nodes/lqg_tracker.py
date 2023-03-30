@@ -4,16 +4,16 @@ import rospy
 import numpy as np
 import csv
 import os
+import argparse
 
 from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import Twist, PoseStamped
 from std_msgs.msg import Float64
 
 from navlab_turtlebot_common.msg import State, Control, NominalTrajectory
-from navlab_turtlebot_control.utils import compute_control, EKF_prediction_step, EKF_correction_step
-from navlab_turtlebot_planner.planner_utils import wrap_states
-from navlab_turtlebot_planner.reachability_utils import generate_robot_matrices
-import params.params as params
+from navlab_turtlebot_control.utils import compute_control, EKF_prediction_step, EKF_correction_step, generate_robot_matrices
+import navlab_turtlebot_common.params as params
+
 
 class LQGTracker():
     """LQG tracker
@@ -22,9 +22,12 @@ class LQGTracker():
     while tracking the current trajectory, it will switch to tracking the new
     trajectory once it has finished the current trajectory.
     """
-    def __init__(self):
+    def __init__(self, name=''):
+        self.name = name
+
         # Initialize node
-        rospy.init_node('traj_tracker', anonymous=True)
+        node_name = self.name + '_LQG_tracker' if self.name else 'LQG_tracker'
+        rospy.init_node(node_name, anonymous=True)
         self.rate = rospy.Rate(1/params.DT)
 
         # Class variables
@@ -43,12 +46,10 @@ class LQGTracker():
         self.new_traj_flag = False
 
         # Publishers
-        self.cmd_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-        self.state_est_pub = rospy.Publisher('controller/state_est', State, queue_size=1)
-        self.debug_pub = rospy.Publisher('debug/x_err', Float64, queue_size=1)
+        self.cmd_pub = rospy.Publisher(self.name + '/cmd_vel', Twist, queue_size=10)
 
         # Subscribers
-        traj_sub = rospy.Subscriber('planner/traj', NominalTrajectory, self.traj_callback)
+        traj_sub = rospy.Subscriber(self.name + '/planner/traj', NominalTrajectory, self.traj_callback)
         measurement_sub = rospy.Subscriber('sensing/mocap_noisy', State, self.measurement_callback)
         gt_sub = rospy.Subscriber('sensing/mocap', State, self.gt_callback)
 
@@ -107,69 +108,37 @@ class LQGTracker():
 
         # ======== EKF Update ========
         self.x_hat, self.P = EKF_correction_step(self.x_hat, self.P, self.z, C, params.R_EKF)
-        self.state_est_pub.publish(wrap_states(self.x_hat)[0])
 
         # ======== Apply feedback control law ========
         u = compute_control(x_nom, u_nom, self.x_hat, K)
 
         # Create motor command msg
-        motor_cmd = Twist()
+        cmd = Twist()
 
         # Closed-loop
-        self.v_des += params.DT * u[1][0]  # integrate acceleration
-        motor_cmd.linear.x = lin_PWM(self.v_des, u[0][0])
-        motor_cmd.angular.z = ang_PWM(self.v_des, u[0][0])
+        cmd.linear.x = u[0]
+        cmd.angular.z = u[1]
 
-        print(" - v_des: ", round(self.v_des,2), " u_a: ", round(u[1][0],2), " u_w: ", round(u[0][0],2))
-        print(" - lin PWM: ", round(motor_cmd.linear.x,2), ", ang PWM: ", round(motor_cmd.angular.z,2))
+        print("u_nom ", u_nom, " u ", u)
 
-        self.cmd_pub.publish(motor_cmd)
-
+        self.cmd_pub.publish(cmd)
         self.idx += 1
 
         # Log data
-        self.logger.writerow([rospy.get_time(), self.z_gt[0][0], self.z_gt[1][0], self.z_gt[2][0],
-                              self.z[0][0], self.z[1][0], self.z[2][0],
-                              x_nom[0][0], x_nom[1][0], x_nom[2][0], x_nom[3][0], self.x_hat[0][0],
-                              self.x_hat[1][0], self.x_hat[2][0], self.x_hat[3][0], u[0][0], u[1][0]])
+        # self.logger.writerow([rospy.get_time(), self.z_gt[0][0], self.z_gt[1][0], self.z_gt[2][0],
+        #                       self.z[0][0], self.z[1][0], self.z[2][0],
+        #                       x_nom[0][0], x_nom[1][0], x_nom[2][0], x_nom[3][0], self.x_hat[0][0],
+        #                       self.x_hat[1][0], self.x_hat[2][0], self.x_hat[3][0], u[0][0], u[1][0]])
 
         # ======== Check for end of trajectory ========
-        if self.idx >= params.SEG_LEN:
-            # Finished tracking current trajectory
-            rospy.loginfo("Finished tracking trajectory")
-
-            # If we have a next trajectory, switch to tracking that. Otherwise, continue the trajectory (braking maneuver)
-            if self.X_nom_next is not None:
-                rospy.loginfo("Switching to next trajectory")
-                self.X_nom_curr = self.X_nom_next
-                self.U_nom_curr = self.U_nom_next
-                self.X_nom_next = None
-                self.X_nom_next = None
-                self.idx = 0
-                self.seg_num += 1
-            else:
-                rospy.loginfo("Executing braking maneuver")
-
-        # ======== Check for end of braking maneuver ========
-        if self.idx >= len(self.U_nom_curr):
-            rospy.loginfo("Braking maneuver completed")
-            # Reset class variables
-            self.X_nom_curr = None
-            self.U_nom_curr = None
-            self.v_des = 0
+        if self.idx >= len(self.X_nom):
+            self.X_nom = None
+            self.u_nom = None
             self.idx = 0
-
-            # Send multiple stop commands in case some don't go through
-            for i in range(5):
-                self.rate.sleep()
-                self.stop_motors()
+            self.stop_motors()
 
         # ======== EKF Predict ========
         self.x_hat, self.P = EKF_prediction_step(self.x_hat, u, self.P, A, params.Q_EKF, params.DT)
-
-        # ======== Debugging ========
-        x_err = self.z[0] - x_nom[0]
-        self.debug_pub.publish(x_err)
 
 
     def stop_motors(self):
@@ -198,7 +167,11 @@ class LQGTracker():
 
 
 if __name__ == '__main__':
-    lqgt = LQGTracker()
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("-n", "--name", help="robot name")
+    args = argParser.parse_args()
+
+    lqgt = LQGTracker(args.name)
     try:
         lqgt.run()
     except rospy.ROSInterruptException:

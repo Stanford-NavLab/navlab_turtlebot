@@ -98,3 +98,82 @@ def EKF_correction_step(x_pred, P_pred, z, C, R):
     P = P_pred - L @ C @ P_pred
 
     return x_hat, P
+
+
+def dlqr_calculate(G, H, Q, R):
+    """
+    Discrete-time Linear Quadratic Regulator calculation.
+    State-feedback control  u[k] = -K*x[k]
+    Implementation from  https://github.com/python-control/python-control/issues/359#issuecomment-759423706
+    How to apply the function:    
+        K = dlqr_calculate(G,H,Q,R)
+        K, P, E = dlqr_calculate(G,H,Q,R, return_solution_eigs=True)
+    Inputs:
+      G, H, Q, R  -> all numpy arrays  (simple float number not allowed)
+      returnPE: define as True to return Ricatti solution and final eigenvalues
+    Returns:
+      K: state feedback gain
+      P: Ricatti equation solution
+      E: eigenvalues of (G-HK)  (closed loop z-domain poles)
+      
+    """
+    from scipy.linalg import solve_discrete_are, inv
+    P = solve_discrete_are(G, H, Q, R)  #Solução Ricatti
+    K = inv(H.T@P@H + R)@H.T@P@G    #K = (B^T P B + R)^-1 B^T P A 
+
+    return K
+
+
+def generate_robot_matrices(x_nom, u_nom, Q_lqr, R_lqr, dt):
+    """Generate A, B, C and K matrices for robot based on given nominal state and input vector.
+    Parameters
+    ----------
+    x_nom : np.array (4x1)
+        nominal state
+    u_nom : np.array (2x1)
+        nominal input
+    Q_lqr : np.array (4x4)
+        LQR state cost weight matrix
+    R_lqr: np.array (2x2)
+        LQR input cost weight matrix
+    dt: float
+        discrete time-step
+    Returns
+    -------
+    A : np.array (4x4)
+        Linearized motion model matrix.
+    B : np.array (4x2)
+        Linearized control input matrix.
+    C : np.array (3x4)
+        Measurement matrix.
+    K : np.array (2x4)
+        Control feedback gain matrix.
+    """
+    # Get state dimension. 
+    state_dim = x_nom.shape[0]
+    input_dim = u_nom.shape[0]
+    measurement_dim = 3  # assuming 2D position and heading measurement
+
+    # Form linearized motion model matrix
+    A = np.identity((state_dim))
+    A[0,2] = -x_nom[3,0]*np.sin(x_nom[2,0])*dt
+    A[0,3] = np.cos(x_nom[2,0])*dt
+    A[1,2] = x_nom[3,0]*np.cos(x_nom[2,0])*dt
+    A[1,3] = np.sin(x_nom[2,0])*dt
+
+    # Form linearized control input matrix
+    B = np.zeros((state_dim,input_dim))
+    B[2,0] = dt; B[3,1] = dt
+
+    # Form measurement matrix
+    C = np.zeros((measurement_dim, state_dim))
+    C[0,0] = 1; C[1,1] = 1; C[2,2] = 1
+
+    # Compute control feedback gain matrix
+    if np.abs(x_nom[3,0]) > 0.01:  # if there is sufficient speed for controllability
+        K = dlqr_calculate(A, B, Q_lqr, R_lqr)
+    else:
+        K = np.array([[0, 0, 1.0, 0], 
+                      [0, 0, 0, 1.0]])  # tuned from flight room tests
+
+    return A, B, C, K
