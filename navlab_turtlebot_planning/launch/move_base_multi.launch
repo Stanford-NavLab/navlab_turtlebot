@@ -23,7 +23,7 @@
   </group>
 
   <!-- move_base -->
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base_$(arg robot_name)" output="screen">
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <param name="base_local_planner" value="$(arg base_local_planner)"/>
     <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find turtlebot3_navigation)/param/costmap_common_params_$(arg model).yaml" command="load" ns="local_costmap" />
