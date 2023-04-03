@@ -5,7 +5,8 @@ import numpy as np
 import time
 import argparse
 
-from scipy.spatial.transform import Rotation as R
+from tf.transformations import euler_from_quaternion
+#from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float64
 
@@ -34,7 +35,7 @@ class Mocap():
         self.theta_std = params.MOCAP_SIGMA[2]
 
         # Publishers and subscribers
-        vrpn_sub = rospy.Subscriber(f'vrpn_client_node/{name}/pose', PoseStamped, self.vrpn_callback)
+        vrpn_sub = rospy.Subscriber('vrpn_odom_node/' + name + '/pose', PoseStamped, self.vrpn_callback)
         self.mocap_pub = rospy.Publisher('/' + name + '/sensing/mocap', State, queue_size=1)
         self.mocap_noisy_pub = rospy.Publisher('/' + name + '/sensing/mocap_noisy', State, queue_size=1)
 
@@ -47,8 +48,10 @@ class Mocap():
         q = data.pose.orientation
 
         quat = np.array([q.x, q.y, q.z, q.w])
-        r = R.from_quat(quat)
-        self.theta = wrap_angle(r.as_euler('zyx')[0])
+        #r = R.from_quat(quat)
+        angles = euler_from_quaternion(quat, axes='xyzs')
+        #self.theta = wrap_angle(r.as_euler('zyx')[0])
+        self.theta = wrap_angle(angles[2])
 
         self.x = pos.x; self.y = pos.y
 

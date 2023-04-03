@@ -12,9 +12,10 @@ import sys
 import numpy as np
 import time
 import argparse
-from scipy.optimize import minimize, NonlinearConstraint
-from scipy.spatial.transform import Rotation as R
+# from scipy.optimize import minimize, NonlinearConstraint
+# from scipy.spatial.transform import Rotation as R
 
+from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Odometry
 
 import navlab_turtlebot_common.params as params
@@ -117,8 +118,10 @@ class DubinsPlanner:
         """
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
         q = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
-        r = R.from_quat(q)
-        theta = r.as_euler('xyz')[2]
+        # r = R.from_quat(q)
+        # theta = r.as_euler('xyz')[2]
+        angles = euler_from_quaternion(quat, axes='xyzs')
+        theta = angles[2]
         self.odom = np.array([x, y, theta])
 
 
@@ -128,51 +131,51 @@ class DubinsPlanner:
         self.odom = np.array([msg.x, msg.y, msg.theta])
 
 
-    def traj_opt(self, init_pose, t_start_plan):
-        """Trajectory Optimization
+    # def traj_opt(self, init_pose, t_start_plan):
+    #     """Trajectory Optimization
 
-        Attempt to find a collision-free plan (v_peak) which brings the agent
-        closest to its goal.
+    #     Attempt to find a collision-free plan (v_peak) which brings the agent
+    #     closest to its goal.
 
-        Parameters
-        ----------
-        t_start_plan : float
-            Time at which planning started for this iteration
+    #     Parameters
+    #     ----------
+    #     t_start_plan : float
+    #         Time at which planning started for this iteration
 
-        Returns
-        -------
-        np.array or None
-            Optimal v_peak or None if failed to find one
+    #     Returns
+    #     -------
+    #     np.array or None
+    #         Optimal v_peak or None if failed to find one
 
-        """
-        def cost(u):
-            traj = dubins_traj(init_pose, u, params.TRAJ_IDX_LEN, params.DT)
-            dist = np.linalg.norm(traj[-1,:-1] - self.p_goal)
-            return dist
+    #     """
+    #     def cost(u):
+    #         traj = dubins_traj(init_pose, u, params.TRAJ_IDX_LEN, params.DT)
+    #         dist = np.linalg.norm(traj[-1,:-1] - self.p_goal)
+    #         return dist
 
-        def constraint(u):
-            traj = dubins_traj(init_pose, u, params.TRAJ_IDX_LEN, params.DT)
-            dists = []
-            for obs_c, obs_r in self.obstacles:
-                dist = np.linalg.norm(traj[:,:-1] - obs_c, axis=1) - (obs_r + params.R_BOT)
-                dists.append(dist)
-            for peer in self.peer_traj:
-                dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1) - (2 * params.R_BOT)
-                dists.append(dist)
-            return np.hstack(dists)
+    #     def constraint(u):
+    #         traj = dubins_traj(init_pose, u, params.TRAJ_IDX_LEN, params.DT)
+    #         dists = []
+    #         for obs_c, obs_r in self.obstacles:
+    #             dist = np.linalg.norm(traj[:,:-1] - obs_c, axis=1) - (obs_r + params.R_BOT)
+    #             dists.append(dist)
+    #         for peer in self.peer_traj:
+    #             dist = np.linalg.norm(traj[:,:-1] - self.peer_traj[peer][:,:-1], axis=1) - (2 * params.R_BOT)
+    #             dists.append(dist)
+    #         return np.hstack(dists)
 
-        start_time = time.time()
-        cons = NonlinearConstraint(constraint, 0, np.inf)
-        u0 = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
-        res = minimize(cost, u0, method='SLSQP', bounds=[(0, params.V_MAX), (-params.W_MAX, params.W_MAX)], constraints=cons, 
-                    options={'disp': False,
-                             'ftol': 1e-6})
-        print("Time elapsed: {:.3f} s".format(time.time() - start_time))
-        print(res.x)
-        mean = [0,0]                                                               # test line
-        covariance = [[0,0], [0,.01]]                                              # test line
-        return res.x + np.random.multivariate_normal(mean,covariance)              # test line
-        #return res.x                                                              # original line
+    #     start_time = time.time()
+    #     cons = NonlinearConstraint(constraint, 0, np.inf)
+    #     u0 = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
+    #     res = minimize(cost, u0, method='SLSQP', bounds=[(0, params.V_MAX), (-params.W_MAX, params.W_MAX)], constraints=cons, 
+    #                 options={'disp': False,
+    #                          'ftol': 1e-6})
+    #     print("Time elapsed: {:.3f} s".format(time.time() - start_time))
+    #     print(res.x)
+    #     mean = [0,0]                                                               # test line
+    #     covariance = [[0,0], [0,.01]]                                              # test line
+    #     return res.x + np.random.multivariate_normal(mean,covariance)              # test line
+    #     #return res.x                                                              # original line
 
 
     def check_collisions(self, traj):
@@ -210,7 +213,7 @@ class DubinsPlanner:
 
         # Transform samples to global frame using init_pose
         traj_samples_global = self.traj_samples.copy()
-        traj_samples_global[:,:,0:2] = traj_samples_global[:,:,0:2] @ rot_mat_2D(init_pose[2]).T  # rotate
+        traj_samples_global[:,:,0:2] = np.matmul(traj_samples_global[:,:,0:2], rot_mat_2D(init_pose[2]).T)  # rotate
         traj_samples_global += init_pose  # translate
 
         endpoints = traj_samples_global[:,-1,:-1]
