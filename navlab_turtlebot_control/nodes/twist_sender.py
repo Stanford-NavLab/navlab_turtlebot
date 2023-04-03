@@ -17,7 +17,7 @@ class TwistSender():
     """Twist Sender
 
     """
-    def __init__(self, name='/'):
+    def __init__(self, name=''):
         self.name = name
 
         # Initialize node
