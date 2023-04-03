@@ -35,7 +35,7 @@
     <!-- Overwriting parameters -->
     <param name="global_costmap/global_frame" value="map"/>
     <param name="global_costmap/robot_base_frame" value="$(arg robot_name)_tf/base_footprint"/>
-    <param name="local_costmap/global_frame" value="$(arg odom_topic)"/>
+    <param name="local_costmap/global_frame" value="$(arg robot_name)_tf/$(arg odom_topic)"/>
     <param name="local_costmap/robot_base_frame" value="$(arg robot_name)_tf/base_footprint"/>
 
     <!-- Sensors (maybe not needed) -->
