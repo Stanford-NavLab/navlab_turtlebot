@@ -20,6 +20,11 @@
   <!-- Load Turtlebot starting positions and goal locations -->
   <rosparam command="load" file="$(arg goal_file)" />
 
+  <!-- Goal Planner -->
+  <group if="$(eval arg('planner') == 'goal')">
+    <node pkg="navlab_turtlebot_planning" name="goal_planner" type="goal_planner.py" output="screen" />
+  </group>
+
   <!-- Gazebo Specific launches -->
   <group if="$(arg sim)">
     <include file="$(find gazebo_ros)/launch/empty_world.launch">
@@ -30,38 +35,13 @@
       <arg name="headless" value="false"/>
       <arg name="debug" value="false"/>
     </include>
-
-    <!-- Goal Planner -->
-    <group if="$(eval arg('planner') == 'goal')">
-      <node pkg="navlab_turtlebot_planning" name="goal_planner" type="goal_planner.py" output="screen" />
-    </group>
   </group>
 
   <!-- Stanford Flight Room Specific Launches -->
   <group if="$(eval not(arg('sim')))">
     <!-- VRPN client -->
-    <node pkg="vrpn_odom_ros" type="vrpn_odom_node" name="vrpn_odom_node" output="screen">
-      <rosparam subst_value="true">
-        server: $(arg server)
-        port: 3883
-        update_frequency: 100.0
-        frame_id: odom
-        use_server_time: false
-        broadcast_tf: true
-        refresh_tracker_frequency: 1.0
-      </rosparam>
-    </node>
-
-    <!-- static map publisher -->
-    <node pkg="tf" type="static_transform_publisher" name="map_odom_publisher" args="0 0 0 0 0 0 1 map odom 100" />
-
-    <!-- Goal Planner -->
-    <group if="$(eval arg('planner') == 'goal')">
-      <node pkg="navlab_turtlebot_planning" name="goal_planner" type="goal_planner_vrpn.py" output="screen" />
-    </group>
-
+    <include file="$(find vrpn_odom_ros)/launch/mocap.launch"/>
   </group>
-
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
