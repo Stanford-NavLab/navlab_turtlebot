@@ -9,7 +9,7 @@
   </include>
 
   <!-- move_base -->
-  <include file="$(find navlab_turtlebot_planning)/launch/move_base_multi.launch">
+  <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_planning)/launch/move_base_multi.launch">
     <arg name="model" value="$(arg model)" />
     <arg name="robot_name" value="$(arg robot_name)" />
     <arg name="move_forward_only" value="$(arg move_forward_only)"/>
