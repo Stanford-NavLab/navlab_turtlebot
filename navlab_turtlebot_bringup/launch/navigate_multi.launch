@@ -1,0 +1,101 @@
+<launch>
+
+  # if true uses Gazebo, if false setup for Stanford flightroom
+  <arg name="sim" default="true"/>
+  # number of turtlebots to use
+  <arg name="robot_count" default="4"/>
+  # turtlebot model type
+  <arg name="model" default="burger"/>
+  # map for navigation
+  <arg name="map_file" default="$(find navlab_turtlebot_sim)/maps/flightroom.yaml"/>
+  # whether or not to open rviz
+  <arg name="open_rviz" default="true"/>
+  # parameters for start and goal locations
+  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/four_square.yaml"/>
+  # type of planner to start, defaults to no planner
+  <arg name="planner" default=""/>
+  # VRPN server, defaults to Stanford Flight Room
+  <arg name="server" default="mocap.local"/>
+
+  <!-- Load Turtlebot starting positions and goal locations -->
+  <rosparam command="load" file="$(arg goal_file)" />
+
+  <!-- Goal Planner -->
+  <group if="$(eval arg('planner') == 'goal')">
+    <node pkg="navlab_turtlebot_planning" name="goal_planner" type="goal_planner.py" output="screen" />
+  </group>
+
+  <!-- Gazebo Specific launches -->
+  <group if="$(arg sim)">
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+      <arg name="world_name" value="$(find navlab_turtlebot_sim)/worlds/flightroom_obstacles.world"/>
+      <arg name="paused" value="false"/>
+      <arg name="use_sim_time" value="true"/>
+      <arg name="gui" value="true"/>
+      <arg name="headless" value="false"/>
+      <arg name="debug" value="false"/>
+    </include>
+  </group>
+
+  <!-- Stanford Flight Room Specific Launches -->
+  <group if="$(eval not(arg('sim')))">
+    <!-- VRPN client -->
+    <include file="$(find vrpn_odom_ros)/launch/mocap.launch"/>
+  </group>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder $(find turtlebot3_description)/urdf/turtlebot3_$(arg model).urdf.xacro" />
+
+  <!-- Map server -->
+  <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
+
+  <!-- BEGIN ROBOT 1-->
+  <group if="$(eval arg('robot_count') >= 1)">
+    <group ns="turtlebot1">
+      <param name="tf_prefix" value="turtlebot1_tf" />
+      <include file="$(find navlab_turtlebot_bringup)/launch/one_robot.launch" >
+        <arg name="robot_name"  value="turtlebot1" />
+        <arg name="sim"  value="$(arg sim)" />
+      </include>
+    </group>
+  </group>
+
+  <!-- BEGIN ROBOT 2-->
+  <group if="$(eval arg('robot_count') >= 2)">
+    <group ns="turtlebot2">
+      <param name="tf_prefix" value="turtlebot2_tf" />
+      <include file="$(find navlab_turtlebot_bringup)/launch/one_robot.launch" >
+        <arg name="robot_name"  value="turtlebot2" />
+        <arg name="sim"  value="$(arg sim)" />
+      </include>
+    </group>
+  </group>
+
+  <!-- BEGIN ROBOT 3-->
+  <group if="$(eval arg('robot_count') >= 3)">
+    <group ns="turtlebot3">
+      <param name="tf_prefix" value="turtlebot3_tf" />
+      <include file="$(find navlab_turtlebot_bringup)/launch/one_robot.launch" >
+        <arg name="robot_name"  value="turtlebot3" />
+        <arg name="sim"  value="$(arg sim)" />
+      </include>
+    </group>
+  </group>
+
+  <!-- BEGIN ROBOT 4-->
+  <group if="$(eval arg('robot_count') >= 4)">
+    <group ns="turtlebot4">
+      <param name="tf_prefix" value="turtlebot4_tf" />
+      <include file="$(find navlab_turtlebot_bringup)/launch/one_robot.launch" >
+        <arg name="robot_name"  value="turtlebot4" />
+        <arg name="sim"  value="$(arg sim)" />
+      </include>
+    </group>
+  </group>
+
+  <!-- rviz -->
+  <group if="$(arg open_rviz)">
+    <node pkg="rviz" type="rviz" name="rviz" required="true"
+          args="-d $(find navlab_turtlebot_sim)/rviz/turtlebot_four_navigation.rviz"/>
+  </group>
+
+</launch>
