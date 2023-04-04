@@ -13,7 +13,7 @@
 
   <!-- Planner params -->
   <group if="$(eval arg('base_local_planner') == 'teb_local_planner/TebLocalPlannerROS')">
-    <param name="move_base/TebLocalPlannerROS/max_vel_x_backwards" value="0.0" if="$(arg move_forward_only)" />
+    <param name="move_base/TebLocalPlannerROS/weight_kinematics_forward_drive" value="1000" if="$(arg move_forward_only)" />  
   </group>
 
   <group if="$(eval arg('base_local_planner') == 'dwa_local_planner/DWAPlannerROS')">
