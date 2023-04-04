@@ -2,32 +2,30 @@
 
 import rospy
 import numpy as np
-from geometry_msgs.msg import Twist
-from trajectory_msgs.msg import JointTrajectory
-from common.msg import NominalTrajectory
-from common.msg import State
-import common.params as params
-from planning.utils import check_obs_collision
+
+from navlab_turtlebot_common.msg import NominalTrajectory
+from navlab_turtlebot_common.msg import State
 from navlab_turtlebot_obstacles.msg import ZonotopeMsg, ZonotopeMsgArray
 
-obstacles = params.OBSTACLES
-robot1 = NominalTrajectory()
-robot2 = NominalTrajectory()
+# Dubins planner
+#robot1 = NominalTrajectory()
+#robot2 = NominalTrajectory()
+trajs = [NominalTrajectory()]*2
 zonotopes = []
 
 def robot1_cb(data):
-    robot1 = data
+    trajs[0] = data
 
 def robot2_cb(data):
-    robot2 = data
+    trajs[1] = data
 
 def zonotope_cb(data):
     zonotopes = data
 
 def check_occlusions():
-    print(robot2)
-    if len(robot2.states)>0:
-        print(robot2.states[0].x)
+    print(trajs[1])
+    if len(trajs[1].states)>0:
+        print(trajs[1].states[0].x)
     if len(robot1.states)>0 and len(robot2.states)>0:
         robot2_pos = robot2.states[0].x
         print(robot2_pos)

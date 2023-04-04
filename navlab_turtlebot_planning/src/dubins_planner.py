@@ -210,7 +210,7 @@ class DubinsPlanner:
 
         # Transform samples to global frame using init_pose
         traj_samples_global = self.traj_samples.copy()
-        traj_samples_global[:,:,0:2] = traj_samples_global[:,:,0:2] @ rot_mat_2D(init_pose[2]).T  # rotate
+        traj_samples_global[:,:,0:2] = np.matmul(traj_samples_global[:,:,0:2], rot_mat_2D(init_pose[2]).T)  # rotate
         traj_samples_global += init_pose  # translate
 
         endpoints = traj_samples_global[:,-1,:-1]
