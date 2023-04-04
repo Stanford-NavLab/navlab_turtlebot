@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   base_local_planner
   costmap_2d
   nav_core
+  diagnostic_msgs
 )
 
 ## System dependencies are found with CMake's conventions
