@@ -1,8 +1,14 @@
 <launch>
+  # name for the robot
   <arg name="robot_name" default="turtlebot1"/>
+  # if true uses Gazebo, if false setup for Stanford flightroom
   <arg name="sim" default="true"/>
+  # turtlebot model type
   <arg name="model" default="burger"/>
+  # whether or not the controller should only move the turtlebot forward
   <arg name="move_forward_only" default="true"/>
+  # type of planner to start, defaults to no planner
+  <arg name="planner" default=""/>
 
   <include file="$(find turtlebot3_bringup)/launch/includes/description.launch.xml">
     <arg name="model" value="$(arg model)" />
@@ -21,12 +27,14 @@
     <node pkg="tf" type="static_transform_publisher" name="map_odom_publisher"
       args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom 100" />
 
-    <!-- move_base -->
-    <include file="$(find navlab_turtlebot_planning)/launch/move_base_multi.launch">
-      <arg name="model" value="$(arg model)" />
-      <arg name="robot_name" value="$(arg robot_name)" />
-      <arg name="move_forward_only" value="$(arg move_forward_only)"/>
-    </include>
+    <!-- move_base if using goal planner -->
+    <group if="$(eval arg('planner') == 'goal')">
+      <include file="$(find navlab_turtlebot_planning)/launch/move_base_multi.launch">
+        <arg name="model" value="$(arg model)" />
+        <arg name="robot_name" value="$(arg robot_name)" />
+        <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+      </include>
+    </group>
 
     <!-- zero command failsafe -->
     <node pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
