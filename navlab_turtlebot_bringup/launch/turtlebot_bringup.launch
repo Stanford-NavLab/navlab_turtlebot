@@ -6,7 +6,7 @@
     </include>
 
     <!-- zero command failsafe -->
-    <node ns="$(arg robot_name)" pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
+    <node ns="$(env USER)" pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
       name="zero_cmd_failsafe" output="screen"/>
 
 </launch>
