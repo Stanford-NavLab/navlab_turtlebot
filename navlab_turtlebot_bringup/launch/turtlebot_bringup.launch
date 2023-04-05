@@ -4,4 +4,9 @@
     <include ns="$(env USER)" file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch">
         <arg name="multi_robot_name" value="turtlebot_core" />
     </include>
+
+    <!-- zero command failsafe -->
+    <node ns="$(env USER)" pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
+      name="zero_cmd_failsafe" output="screen"/>
+
 </launch>

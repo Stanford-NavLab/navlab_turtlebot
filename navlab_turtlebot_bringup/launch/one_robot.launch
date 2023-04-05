@@ -26,8 +26,12 @@
       <arg name="model" value="$(arg model)" />
       <arg name="robot_name" value="$(arg robot_name)" />
       <arg name="move_forward_only" value="$(arg move_forward_only)"/>
-      <arg name="odom_topic" value="$(arg robot_name)_tf/odom"/>
     </include>
+
+    <!-- zero command failsafe -->
+    <node pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
+      name="zero_cmd_failsafe" output="screen"/>
+
   </group>
 
   <group if="$(eval not(arg('sim')))">
