@@ -13,7 +13,7 @@ import numpy as np
 import time
 import argparse
 # from scipy.optimize import minimize, NonlinearConstraint
-# from scipy.spatial.transform import Rotation as R
+from scipy.spatial.transform import Rotation as R
 
 from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Odometry
@@ -55,8 +55,8 @@ class DubinsPlanner:
         self.traj_msg = None
 
         # Subscribers
-        #odom_sub = rospy.Subscriber(self.name + '/odom', Odometry, self.odom_callback)
-        mocap_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.mocap_callback)
+        odom_sub = rospy.Subscriber(self.name + '/odom', Odometry, self.odom_callback)
+        #mocap_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.mocap_callback)
         self.odom = None  # [x, y, theta]
 
         # Initial state (x, y, theta) and goal position (x, y)
@@ -118,10 +118,10 @@ class DubinsPlanner:
         """
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
         q = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
-        # r = R.from_quat(q)
-        # theta = r.as_euler('xyz')[2]
-        angles = euler_from_quaternion(quat, axes='xyzs')
-        theta = angles[2]
+        r = R.from_quat(q)
+        theta = r.as_euler('xyz')[2]
+        #angles = euler_from_quaternion(q, axes='xyzs') #it said quat instead of q
+        #theta = angles[2]
         self.odom = np.array([x, y, theta])
 
 

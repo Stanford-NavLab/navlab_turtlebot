@@ -8,7 +8,7 @@ import argparse
 
 from scipy.spatial.transform import Rotation as R
 from geometry_msgs.msg import Twist, PoseStamped
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, Int16MultiArray
 
 from navlab_turtlebot_common.msg import State, Control, NominalTrajectory
 import navlab_turtlebot_common.params as params
@@ -28,13 +28,14 @@ class TwistSender():
         self.idx = 0  # current index in the trajectory
         self.X_nom = None
         self.u_nom = None
+        self.no_comms = [0,0]
 
         # Publishers
         self.cmd_pub = rospy.Publisher(self.name + '/cmd_vel', Twist, queue_size=10)
 
         # Subscribers
         traj_sub = rospy.Subscriber(self.name + '/planner/traj', NominalTrajectory, self.traj_callback)
-
+        comms_sub = rospy.Subscriber('/comms_list',Int16MultiArray,self.comms_cb)
 
     def traj_callback(self, data):
         """Trajectory subscriber callback.
@@ -45,6 +46,11 @@ class TwistSender():
         self.idx = 0
         rospy.loginfo("Received trajectory of length %d", len(data.states))
 
+    def comms_cb(self,multiarr):
+        """
+        Saves if communications have been lost between agents.
+        """
+        self.no_comms = multiarr.data
 
     def track(self):
         """Track next point in the current trajectory, and run the EKF for estimation.
@@ -58,11 +64,12 @@ class TwistSender():
         u_nom = np.array([u_nom_msg.v, u_nom_msg.omega])
 
         # Create cmd_vel msg
-        cmd = Twist()
-        cmd.linear.x = u_nom[0]
-        cmd.angular.z = u_nom[1]
-        self.cmd_pub.publish(cmd)
-        self.idx += 1
+        if sum(self.no_comms)==0 or (sum(self.no_comms)!=0 and self.name=="turtlebot1"):
+            cmd = Twist()
+            cmd.linear.x = u_nom[0]
+            cmd.angular.z = u_nom[1]
+            self.cmd_pub.publish(cmd)
+            self.idx += 1
 
         if self.idx >= len(self.X_nom):
             self.X_nom = None

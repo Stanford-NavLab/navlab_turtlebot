@@ -3,6 +3,7 @@
 import rospy
 import numpy as np
 
+from std_msgs.msg import Int16MultiArray
 from navlab_turtlebot_common.msg import NominalTrajectory
 from navlab_turtlebot_common.msg import State
 from navlab_turtlebot_obstacles.msg import ZonotopeMsg, ZonotopeMsgArray
@@ -26,8 +27,8 @@ def check_occlusions():
     print(trajs[1])
     if len(trajs[1].states)>0:
         print(trajs[1].states[0].x)
-    if len(robot1.states)>0 and len(robot2.states)>0:
-        robot2_pos = robot2.states[0].x
+    if len(trajs[0].states)>0 and len(trajs[1].states)>0:
+        robot2_pos = trajs[1].states[0].x
         print(robot2_pos)
         #for obs in obstacles:
             #if not check_obs_collisions(positions,obs,2*params.R_BOT):
@@ -35,8 +36,9 @@ def check_occlusions():
     return True
 
 def comms():
-    pub1 = rospy.Publisher('/turtlebot1/comms',NominalTrajectory,queue_size=10)
-    pub2 = rospy.Publisher('/turtlebot2/comms',NominalTrajectory,queue_size=10)
+    pub = rospy.Publisher('comms_list',Int16MultiArray,queue_size=10)
+    #pub1 = rospy.Publisher('/turtlebot1/comms',NominalTrajectory,queue_size=10)
+    #pub2 = rospy.Publisher('/turtlebot2/comms',NominalTrajectory,queue_size=10)
     rospy.init_node('comms',anonymous=True)
     rate = rospy.Rate(10)
     while not rospy.is_shutdown():
@@ -49,9 +51,12 @@ def comms():
         else:
             no_comms = np.array([1,1])
         # If comms are working, robot1 gets the info from robot2, and vice versa
+        comms_list = Int16MultiArray(data=list(no_comms[0]))
+        pub.publish(comms_list)
         if np.sum(no_comms)==0:
-            pub1.publish(robot2)
-            pub2.publish(robot1)
+            #pub1.publish(trajs[1])
+            #pub2.publish(trajs[0])
+            pass
         else:
             print("Comms down!")
         rate.sleep()
