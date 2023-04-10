@@ -12,7 +12,7 @@ from navlab_turtlebot_obstacles.msg import ZonotopeMsg, ZonotopeMsgArray
 #robot1 = NominalTrajectory()
 #robot2 = NominalTrajectory()
 trajs = [NominalTrajectory()]*2
-zonotopes = []
+zonotopes = ZonotopeMsgArray()
 
 def robot1_cb(data):
     trajs[0] = data
@@ -21,15 +21,16 @@ def robot2_cb(data):
     trajs[1] = data
 
 def zonotope_cb(data):
-    print("here's some zonotopes")
+    #print(data)
     zonotopes = data
 
 def check_occlusions():
-    if len(trajs[1].states)>0:
-        print(trajs[1].states[0].x)
+    #if len(trajs[1].states)>0:
+        #print(trajs[1].states[0].x)
     if len(trajs[0].states)>0 and len(trajs[1].states)>0:
-        robot2_pos = trajs[1].states[0].x
-        print(robot2_pos)
+        #robot2_pos = trajs[1].states[0].x
+        #print(robot2_pos)
+        print(zonotopes)
         for obs in zonotopes:
             print(obs)
             print(" ")
