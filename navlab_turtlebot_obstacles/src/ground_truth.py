@@ -21,7 +21,7 @@ class ZonotopePublisher():
         self.publisher = rospy.Publisher(self.name+'map/zonotopes',ZonotopeMsgArray, queue_size=10)
 
         # Set node parameters
-        rospy.set_param('worldfile','/home/izzie/catkin_ws/src/navlab_turtlebot_base/worlds/flightroom_obstacles.world')
+        rospy.set_param('worldfile','/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_sim/worlds/flightroom_obstacles.world')
         rospy.set_param('rate',1.0)
 
         # Use worldfile parameter to get zonotopes
