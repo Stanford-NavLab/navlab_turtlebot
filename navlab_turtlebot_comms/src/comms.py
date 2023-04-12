@@ -7,12 +7,11 @@ from std_msgs.msg import Int16MultiArray
 from navlab_turtlebot_common.msg import NominalTrajectory
 from navlab_turtlebot_common.msg import State
 from navlab_turtlebot_obstacles.msg import ZonotopeMsg, ZonotopeMsgArray
+from zonotope import Zonotope
 
 class comms_node():
     def __init__(self):
         # Dubins planner
-        #robot1 = NominalTrajectory()
-        #robot2 = NominalTrajectory()
         self.trajs = [NominalTrajectory()]*2
         self.zonotopes = []
 
@@ -23,24 +22,35 @@ class comms_node():
         self.trajs[1] = data
 
     def zonotope_cb(self,data):
-        #print(data)
-        #print(data.zonotopes)
-        #print(type(data.zonotopes))
         self.zonotopes = data.zonotopes
-        print("cb",len(self.zonotopes))
 
     def check_occlusions(self):
         #if len(trajs[1].states)>0:
             #print(trajs[1].states[0].x)
         if len(self.trajs[0].states)>0 and len(self.trajs[1].states)>0:
-            #robot2_pos = trajs[1].states[0].x
-            #print(robot2_pos)
-            print("check",len(self.zonotopes))
+            r1_x = self.trajs[0].states[0].x
+            r1_y = self.trajs[0].states[0].y
+            r2_x = self.trajs[1].states[0].x
+            r2_y = self.trajs[1].states[0].y
+            r_m = (r2_y-r1_y)/(r2_x-r1_x)
+            r_b = r_m*r2_x+r2_y
             for obs in self.zonotopes:
-                print(obs)
-                print(" ")
-                #if not check_obs_collisions(positions,obs,2*params.R_BOT):
-                    #return False
+                c = np.array(obs.generators[0:3]).reshape((obs.dim,1))
+                g = np.array(obs.generators[3:]).reshape((obs.dim,obs.num_gen-1))
+                vertices = Zonotope(c,g).vertices()
+                print(vertices[:2])
+                for i in range(vertices.shape[1]):
+                    p1 = vertices[:2,i]
+                    p2 = vertices[:2,(i+1)%vertices.shape[1]]
+                    m = (p2-p1)[1]/(p2-p1)[0]
+                    if m != r_m: #Check the two line segments aren't parallel
+                        b = m*p2[0]+p2[1]
+                        x = (r_b-b)/(m-r_m)
+                        y = m*x+b
+                        # If the point is on the line segments, the difference between x and bounds should have opposite signs to be in between
+                        if abs(x-p1[0])/(x-p1[0])!=abs(x-p2[0])/(x-p2[0]) and \
+                           abs(x-r1_x)/(x-r1_x) != abs(x-r2_x)/(x-r2_x):
+                            return False
         return True
 
     def comms(self):
@@ -53,7 +63,6 @@ class comms_node():
             rospy.Subscriber('/turtlebot1/planner/traj',NominalTrajectory,self.robot1_cb)
             rospy.Subscriber('/turtlebot2/planner/traj',NominalTrajectory,self.robot2_cb)
             rospy.Subscriber('/map/zonotopes',ZonotopeMsgArray,self.zonotope_cb)
-            print("between",len(self.zonotopes))
             # Probability 1% of comms dropping each .1 sec, comms drop for occlusions
             if self.check_occlusions():
                 no_comms = np.random.choice([0,1],size=(1,2),p=[.99,.01])
