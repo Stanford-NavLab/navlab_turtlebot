@@ -70,6 +70,8 @@ class TwistSender():
             cmd.angular.z = u_nom[1]
             self.cmd_pub.publish(cmd)
             self.idx += 1
+        else:
+            self.stop_motors()
 
         if self.idx >= len(self.X_nom):
             self.X_nom = None
