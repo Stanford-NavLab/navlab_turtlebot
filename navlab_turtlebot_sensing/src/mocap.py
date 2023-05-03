@@ -79,7 +79,7 @@ class Mocap():
 
         self.x = pos.x; self.y = pos.y
 
-        rospy.loginfo("Received data: (%f, %f, %f)", self.x, self.y, self.theta)
+        #rospy.loginfo("Received data: (%f, %f, %f)", self.x, self.y, self.theta)
 
         self.publish()
 
