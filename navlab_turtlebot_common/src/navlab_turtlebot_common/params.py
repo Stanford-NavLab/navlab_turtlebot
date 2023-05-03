@@ -30,7 +30,7 @@ W_MAX = 1.0  # [rad/s] angular velocity constraint
 
 """ Planning parameters """
 R_GOAL_REACHED = 0.2  # [m] stop planning when within this dist of goal
-N_PLAN_MAX = 5000     # Max number of plans to evaluate
+N_PLAN_MAX = 1000     # Max number of plans to evaluate
 MODEL_NAME = 'quadrotor_linear_planning_model.mat'  # LPM file
 
 

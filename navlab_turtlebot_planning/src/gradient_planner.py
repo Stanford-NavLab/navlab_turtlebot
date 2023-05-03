@@ -61,7 +61,7 @@ class GradientPlanner:
         # Subscribers
         #odom_sub = rospy.Subscriber(self.name + '/odom', Odometry, self.odom_callback)
         mocap_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.mocap_callback)
-        self.odom = None  # [x, y, theta]
+        self.odom = np.zeros(3)  # [x, y, theta]
 
         # Initial state (x, y, theta) and goal position (x, y)
         if self.name == 'turtlebot1':
@@ -157,12 +157,19 @@ class GradientPlanner:
             return goal_cost + obs_cost
 
         start_time = time.time()
-        u0 = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
-        res = minimize(cost, u0, method='Nelder-Mead', bounds=[(0, params.V_MAX), (-params.W_MAX, params.W_MAX)],
-                    options={'disp': False,
-                             'ftol': 1e-6})
+        # u0 = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
+        # res = minimize(cost, u0, method='L-BFGS-B', bounds=[(0, params.V_MAX), (-params.W_MAX, params.W_MAX)],
+        #             options={'disp': False,
+        #                      #'ftol': 1e-6
+        #                      })
+        # print("Time elapsed: {:.3f} s".format(time.time() - start_time))
+        # return res.x                                                           
+        u_samples = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
+        costs = np.array([cost(u) for u in u_samples])
+        min_idx = np.argmin(costs)
+        opt_cost, opt_u = costs[min_idx], u_samples[min_idx]
         print("Time elapsed: {:.3f} s".format(time.time() - start_time))
-        return res.x                                                              
+        return opt_u
 
 
 
