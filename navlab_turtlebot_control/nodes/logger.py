@@ -4,6 +4,7 @@ import rospy
 import numpy as np
 import csv
 import os
+import sys
 import argparse
 
 #from scipy.spatial.transform import Rotation as R
@@ -15,46 +16,46 @@ from navlab_turtlebot_control.utils import compute_control, EKF_prediction_step,
 import navlab_turtlebot_common.params as params
 
 
-class LQGTracker():
-    """LQG tracker
-
-    Tracks nominal trajectories by applying linear control feedback using
-    state estimate and sending motor commands. If a new trajectory is received
-    while tracking the current trajectory, it will switch to tracking the new
-    trajectory once it has finished the current trajectory.
+class Logger():
+    """Logger node
 
     """
-    def __init__(self, name=''):
-        self.name = name
-
-        # Initialize node
-        node_name = name + '_LQG_tracker' if name else 'LQG_tracker'
-        rospy.init_node(node_name, anonymous=True)
-        self.rate = rospy.Rate(1/params.DT)
-
-        # Class variables
-        self.idx = 0  # current index in the trajectory
-        self.X_nom = None
-        self.u_nom = None
-
-        self.x_hat = None  # state estimate
-        self.P = params.P_0  # covariance
-
-        self.z = np.zeros((3,1))  # measurement
-        self.z_gt = np.zeros((3,1))  # ground-truth measurement (no noise)
-        self.v_des = 0
-        self.t_start = 0
-
-        self.new_traj_flag = False
-
-        # Publishers
-        self.cmd_pub = rospy.Publisher('/' + name + '/cmd_vel', Twist, queue_size=10)
-        self.state_est_pub = rospy.Publisher('/' + name + '/state_est', State, queue_size=10)
+    def __init__(self, bots):
+        # bots empty, try to subscribe to 1-4 by default
+        if bots:
+            self.bots = bots
+        else:
+            self.bots = ['1', '2', '3', '4']
 
         # Subscribers
+        for bot in bots:
+            gt_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.gt_callback)
+            meas_sub = rospy.Subscriber('/' + name + '/sensing/mocap_noisy', State, self.measurement_callback)
         traj_sub = rospy.Subscriber('/' + name + '/planner/traj', NominalTrajectory, self.traj_callback)
         measurement_sub = rospy.Subscriber('/' + name + '/sensing/mocap_noisy', State, self.measurement_callback)
         gt_sub = rospy.Subscriber('/' + name + '/sensing/mocap', State, self.gt_callback)
+
+        # Logging
+        path = '/home/navlab-nuc/Rover/flightroom_data/4_12_2022/debug/'
+        filename = 'track_'+str(rospy.get_time())+'.csv'
+        self.logger = csv.writer(open(os.path.join(path, filename), 'w'))
+        self.logger.writerow(['t',                            # time
+                              'x', 'y', 'theta',              # ground-truth state
+                              'z_x', 'z_y', 'z_theta',        # measured state
+                              'x_nom', 'y_nom', 'theta_nom',  # nominal state  
+                              'x_hat', 'y_hat', 'theta_hat',  # estimated state
+                              'u_v', 'u_w'])                  # controls 
+    
+    def traj_callback(self, data, topic):
+        """Trajectory subscriber callback
+
+        Parameters
+        ----------
+        msg : NominalTrajectory
+            Trajectory message
+
+        """
+        self.peer_traj[topic] = unwrap_states(msg.states)
 
 
     def traj_callback(self, data):
@@ -62,7 +63,6 @@ class LQGTracker():
         """
         self.X_nom = data.states
         self.u_nom = data.control
-        self.idx = 0
         rospy.loginfo("Received trajectory of length %d", len(data.states))
 
 
@@ -124,6 +124,12 @@ class LQGTracker():
         self.cmd_pub.publish(cmd)
         self.idx += 1
 
+        # Log data
+        self.logger.writerow([rospy.get_time(), self.z_gt[0][0], self.z_gt[1][0], self.z_gt[2][0],
+                              self.z[0][0], self.z[1][0], self.z[2][0],
+                              x_nom[0][0], x_nom[1][0], x_nom[2][0], x_nom[3][0], self.x_hat[0][0],
+                              self.x_hat[1][0], self.x_hat[2][0], self.x_hat[3][0], u[0][0], u[1][0]])
+
         # ======== Check for end of trajectory ========
         if self.idx >= len(self.X_nom):
             self.X_nom = None
@@ -161,16 +167,14 @@ class LQGTracker():
 
 
 if __name__ == '__main__':
-    argParser = argparse.ArgumentParser()
-    argParser.add_argument("-n", "--name", help="robot name")
-    args = argParser.parse_args()
+    # argParser = argparse.ArgumentParser()
+    # argParser.add_argument("-n", "--name", help="robot name")
+    # args = argParser.parse_args()
 
-    # Auto-get turtlebot name
-    if args.name is None:
-        args.name = os.environ['USER']
+    print(sys.argv[1:])
 
-    lqgt = LQGTracker(args.name)
+    logger = Logger(sys.argv[1:])
     try:
-        lqgt.run()
+        logger.run()
     except rospy.ROSInterruptException:
         pass

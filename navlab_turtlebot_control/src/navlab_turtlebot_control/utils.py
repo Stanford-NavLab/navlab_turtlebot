@@ -29,7 +29,7 @@ def compute_control(x_nom, u_nom, x_hat, K):
     err[2] = wrap_angle(err[2])  # Wrap theta
 
     # Compute total control input
-    u = u_nom - K @ err
+    u = u_nom - np.matmul(K, err)
 
     return u
 
@@ -61,7 +61,7 @@ def EKF_prediction_step(x_hat, u, P, A, Q, dt):
     # Compute predicted state
     x_pred = x_hat + np.array([u[0] * np.cos(x_hat[2]), u[0] * np.sin(x_hat[2]), u[1]]) * dt
     # Compute predicted state estimation covariance matrix
-    P_pred = A @ P @ A.T + Q
+    P_pred = A @ np.matmul(P, A.T) + Q
 
     return x_pred, P_pred
 

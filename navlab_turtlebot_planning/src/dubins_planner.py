@@ -9,11 +9,12 @@ ROS Linear Planner node.
 import rospy
 import rospkg
 import sys
+import os
 import numpy as np
 import time
 import argparse
 # from scipy.optimize import minimize, NonlinearConstraint
-# from scipy.spatial.transform import Rotation as R
+#from scipy.spatial.transform import Rotation as R
 
 from tf.transformations import euler_from_quaternion
 from nav_msgs.msg import Odometry
@@ -42,6 +43,9 @@ class DubinsPlanner:
     """
     def __init__(self, name=''):
         self.name = name
+
+        # Print python version
+        print("Using Python ", sys.version)
 
         # Initialize node 
         rospy.init_node(name + '_dubins_planner', disable_signals=True)
@@ -75,6 +79,8 @@ class DubinsPlanner:
             self.p_0 = np.array([0, 0, 0])
             self.p_goal = np.array([5, 0])
             self.peers = []
+
+        print("GOAL: ", str(self.p_goal))
 
         # Subscribe to peer trajectories
         for peer in self.peers:
@@ -118,9 +124,7 @@ class DubinsPlanner:
         """
         x, y = msg.pose.pose.position.x, msg.pose.pose.position.y
         q = np.array([msg.pose.pose.orientation.x, msg.pose.pose.orientation.y, msg.pose.pose.orientation.z, msg.pose.pose.orientation.w])
-        # r = R.from_quat(q)
-        # theta = r.as_euler('xyz')[2]
-        angles = euler_from_quaternion(quat, axes='xyzs')
+        angles = euler_from_quaternion(q)
         theta = angles[2]
         self.odom = np.array([x, y, theta])
 
@@ -297,6 +301,10 @@ if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-n", "--name", help="robot name")
     args = argParser.parse_args()
+
+    # Auto-get turtlebot name
+    if args.name is None:
+        args.name = os.environ['USER']
 
     dp = DubinsPlanner(args.name)
     try:
