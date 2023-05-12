@@ -126,9 +126,15 @@ class Zonotope(object):
                 return V
             
             # generate vertices for a unit parallelotope
-            vert = np.array(np.meshgrid([1, -1], [1, -1], [1, -1])).reshape(3,-1)
-            V = c + np.matmul(G[:,:n], vert) 
-            
+            vert = np.array(np.meshgrid([1,-1],[1,-1],[1,-1],[1,-1],[1,-1])).reshape((5,-1))
+            print(vert)
+            print("FINDING VERTICES")
+            print("G",G)
+            print(vert)
+            V = c + np.matmul(G, vert) 
+            print(c)
+            print(np.matmul(G, vert))
+            print(V)
             #TODO: rest unimplemented
 
         return V

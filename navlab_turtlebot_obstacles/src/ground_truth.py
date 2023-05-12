@@ -39,8 +39,8 @@ class ZonotopePublisher():
         worldfile = rospy.get_param('worldfile')
         parser = WorldParser(worldfile)
         print(parser.allZonotopes())
-        print(parser.getCylinders())
-        print(parser.cyl2zon(parser.getCylinders()[0]))
+        #print(parser.getCylinders())
+        #print(parser.cyl2zon(parser.getCylinders()[0]))
         return parser.allZonotopes()
 
     def get_zonotope_array(self):

@@ -1,3 +1,4 @@
+
 import numpy as np
 import xml.etree.ElementTree as ET
 
@@ -48,8 +49,12 @@ class WorldParser:
         G[:,0] = center
         G[:,-1] = [0,0,length/2]
 
+        #print("debugging")
+        #print(np.transpose(G))
         for i in range(num_sides//2):
             theta = (i-1)*dtheta
             G[:,i+1] = [radius*np.cos(theta)/scale,radius*np.sin(theta)/scale,0]
 
+        print(np.transpose(G))
+        print(" ")
         return G

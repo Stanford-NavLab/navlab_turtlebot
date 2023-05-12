@@ -35,6 +35,7 @@ class comms_node():
 
     def zonotope_cb(self,data):
         self.zonotopes = data.zonotopes
+        #print(self.zonotopes[0].generators)
 
     def check_occlusions(self):
         #if len(trajs[1].states)>0:
@@ -50,13 +51,16 @@ class comms_node():
         r_m = (self.locs[1,1]-self.locs[0,1])/(self.locs[1,0]-self.locs[0,0])
         r_b = r_m*self.locs[1,0] + self.locs[1,1]
         for obs in self.zonotopes:
-            c = np.array(obs.generators[0:3]).reshape((obs.dim,1))
-            g = np.array(obs.generators[3:]).reshape((obs.dim,obs.num_gen-1))
-            vertices = Zonotope(c,g).vertices()
-            #print(vertices[:2])
-            for i in range(vertices.shape[1]):
+            #print(np.array(obs.generators).reshape((obs.dim,obs.num_gen)))
+            c = np.array(obs.generators).reshape((obs.dim,obs.num_gen))[:,0].reshape((obs.dim,1))
+            #print("c",c[:2])
+            g = np.array(obs.generators).reshape((obs.dim,obs.num_gen))[:,1:]
+            #print("g",g[:2,:-1])
+            vertices = Zonotope(c[:2],g[:2,:-1]).vertices()
+            print("v",vertices)
+            for i in range(vertices.shape[1]-1):
                 p1 = vertices[:2,i]
-                p2 = vertices[:2,(i+1)%vertices.shape[1]]
+                p2 = vertices[:2,i+1]
                 m = (p2-p1)[1]/(p2-p1)[0]
                 b = m*p2[0]+p2[1]
                 if abs(m-r_m)>.001: #Check the two line segments aren't parallel
