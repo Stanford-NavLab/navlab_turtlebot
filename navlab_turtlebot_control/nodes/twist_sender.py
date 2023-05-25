@@ -28,7 +28,8 @@ class TwistSender():
         self.idx = 0  # current index in the trajectory
         self.X_nom = None
         self.u_nom = None
-        self.no_comms = [0,0]
+        #self.no_comms = [0,0]
+        self.comms_list = [0,0,0,0]
 
         # Publishers
         self.cmd_pub = rospy.Publisher(self.name + '/cmd_vel', Twist, queue_size=10)
@@ -50,7 +51,7 @@ class TwistSender():
         """
         Saves if communications have been lost between agents.
         """
-        self.no_comms = multiarr.data
+        self.comms_list = multiarr.data
 
     def track(self):
         """Track next point in the current trajectory, and run the EKF for estimation.
@@ -64,7 +65,12 @@ class TwistSender():
         u_nom = np.array([u_nom_msg.v, u_nom_msg.omega])
 
         # Create cmd_vel msg
-        if sum(self.no_comms)==0 or (sum(self.no_comms)!=0 and self.name=="turtlebot1"):
+        # First check if bot in main group with priority to move
+        main = self.name=="turtlebot1" or \
+               (self.name=="turtlebot2" and self.comms_list[1]==self.comms_list[0]) or \
+               (self.name=="turtlebot3" and self.comms_list[2]==self.comms_list[0]) or \
+               (self.name=="turtlebot4" and self.comms_list[3]==self.comms_list[0])
+        if sum(self.comms_list)==0 or (sum(self.comms_list)!=0 and main):
             cmd = Twist()
             cmd.linear.x = u_nom[0]
             cmd.angular.z = u_nom[1]

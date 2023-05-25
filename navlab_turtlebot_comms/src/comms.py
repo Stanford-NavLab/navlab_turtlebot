@@ -56,7 +56,10 @@ class comms_node():
         """
         Checks if the path between robot zero and robot one is obstructed by a 2D obstacle.
         """
-        r_m = (self.locs[one,1]-self.locs[zero,1])/(self.locs[one,0]-self.locs[zero,0])
+        if self.locs[one,0]-self.locs[zero,0]>.001: # avoid divide by 0
+            r_m = (self.locs[one,1]-self.locs[zero,1])/(self.locs[one,0]-self.locs[zero,0])
+        else:
+            r_m = np.inf
         r_b = r_m*self.locs[one,0] + self.locs[one,1]
         for obs in self.zonotopes:
             c = np.array(obs.generators).reshape((obs.dim,obs.num_gen))[:,0].reshape((obs.dim,1))
@@ -65,14 +68,17 @@ class comms_node():
             for i in range(vertices.shape[1]-1):
                 p1 = vertices[:2,i]
                 p2 = vertices[:2,i+1]
-                m = (p2-p1)[1]/(p2-p1)[0]
+                if (p1-p1)[0] > .001: # avoid divide by 0
+                    m = (p2-p1)[1]/(p2-p1)[0]
+                else:
+                    m = np.inf
                 b = m*p2[0]+p2[1]
                 if abs(m-r_m)>.001: #Check the two line segments aren't parallel
                     b = m*p2[0]+p2[1]
-                    if np.absolute(m) == np.inf:
+                    if m == np.inf: # I'm really hoping both aren't infinity lol
                         x = p2[0]
                         y = r_m*x+r_b
-                    elif np.absolute(r_m) == np.inf:
+                    elif r_m == np.inf:
                         x = self.locs[zero,0]
                         y = m*x+b
                     else:
@@ -112,13 +118,16 @@ class comms_node():
             rospy.Subscriber('/gazebo/model_states',ModelStates,self.gazebo_cb)
             rospy.Subscriber('/map/zonotopes',ZonotopeMsgArray,self.zonotope_cb)
             # Probability 1% of comms dropping each .1 sec, comms drop for occlusions
-            randloss = np.random.choice([0,1],size=(self.n,self.n),p=[.99,.01])
+            randloss = np.random.choice([0,1],size=(self.n,),p=[.99,.01])
+            # Initialize comms groups
             comms_group = np.array([np.inf]*self.n)
-            group = 0
-            comms_group[0] = 0
-            old_group = np.copy(comms_group)
+            group = 0 # current group is 0
+            comms_group[0] = 0 # turtlebot1 always in group 0 to start
             # Until each robot has been assigned a group
+            #print(" ")
+            #print("start")
             while np.sum(comms_group) == np.inf:
+                old_group = np.copy(comms_group) # Keep track of last grouping
                 # for each robot
                 for i in range(self.n):
                     # if it is in the current group we are assigning robots to
@@ -128,7 +137,7 @@ class comms_node():
                             # if it isn't the same robot and it doesn't already have a group
                             if not j==i and comms_group[j]==np.inf:
                                 # If the line of sight is not blocked:
-                                if self.check_occlusions(i,j) and randloss[i,j]==0:
+                                if self.check_occlusions(i,j): #and randloss[i,j]==0:
                                     # Assign to the same comms group
                                     comms_group[j] = comms_group[i]
                 # If the last iteration didn't change anything,
@@ -138,13 +147,24 @@ class comms_node():
                     # If we are at one robot left, just stop
                     if np.sum(np.where(comms_group==np.inf,1,0))==1:
                         comms_group = np.where(comms_group==np.inf,group,comms_group)
-                old_group = np.copy(comms_group)
+                    else:
+                        # If 2+ left, find first one that is unassigned
+                        for i in range(len(comms_group)):
+                            if comms_group[i] == np.inf:
+                                comms_group[i] = group # Set it to the new group
+                #print(comms_group)
+            #print("finished")
             #if self.check_occlusions():
                 #no_comms = np.random.choice([0,1],size=(1,2),p=[.99,.01])
             #else:
                 #no_comms = np.array([1,1]).reshape((1,2))
             # If comms are working, robot1 gets the info from robot2, and vice versa
             #comms_list = Int16MultiArray(data=list(no_comms[0]))
+            for i in range(len(comms_group)):
+                # If this robot is marked to randomly drop comms
+                if randloss[i] == 1:
+                    # Set the robot to a comms group by itself that doesn't already exist
+                    comms_group[i] = 4+i
             comms_list = Int16MultiArray(data=list(comms_group))
             pub.publish(comms_list)
             if np.sum(comms_group)==0:
