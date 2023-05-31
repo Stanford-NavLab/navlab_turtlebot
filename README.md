@@ -43,8 +43,8 @@ Params/goal file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`
 Change ROS planner: `navlab_turtlebot/navlab_turtlebot_planning/launch/move_base_multi.launch`
  - TEB planner or DWA planner
 
-TEB planner obstacles:
-publish to topic: `/turtlebot1/move_base/TebLocalPlannerROS/obstacles`
+TEB planner obstacles:\
+1. publish to topic: `/turtlebot1/move_base/TebLocalPlannerROS/obstacles`
 
 ## Troubleshooting
 If you get an error that says:
