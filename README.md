@@ -29,12 +29,15 @@ Gazebo two robot position exchange
   - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot1`
   - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot2`
 
+In general:
 `roslaunch navlab_turtlebot_base navigate_multi.launch`
+
 args: 
  - `robot_count:=n`
  - `sim:=true/false`
  - `planner:=`
-Params file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`
+ - 
+Params/goal file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`
  - For now, easiest to edit `navigate_multi.launch` to adjust params file
 
 
