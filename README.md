@@ -28,7 +28,7 @@ Gazebo two robot position exchange
 3. Start the planners  
   - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot1`
   - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot2`
-
+---
 In general:
 `roslaunch navlab_turtlebot_base navigate_multi.launch`
 
