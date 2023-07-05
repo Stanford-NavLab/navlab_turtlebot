@@ -3,7 +3,7 @@
   # if true uses Gazebo, if false setup for Stanford flightroom
   <arg name="sim" default="true"/>
   # number of turtlebots to use
-  <arg name="robot_count" default="4"/>
+  <arg name="robot_count" default="2"/>
   # turtlebot model type
   <arg name="model" default="burger"/>
   # map for navigation
@@ -11,9 +11,11 @@
   # whether or not to open rviz
   <arg name="open_rviz" default="true"/>
   # parameters for start and goal locations
-  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/four_square.yaml"/>
+  <!-- <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/two_swap.yaml"/> -->
+  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/one_origin.yaml"/>
   # type of planner to start, defaults to no planner
-  <arg name="planner" default=""/>
+  <arg name="planner" default="goal"/>
+   <!-- <arg name="planner" default=""/> -->
   # VRPN server, defaults to Stanford Flight Room
   <arg name="server" default="mocap.local"/>
 

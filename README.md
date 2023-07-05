@@ -28,7 +28,23 @@ Gazebo two robot position exchange
 3. Start the planners  
   - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot1`
   - `rosrun navlab_turtlebot_planning dubins_planner.py -n turtlebot2`
+---
+In general:
+`roslaunch navlab_turtlebot_bringup navigate_multi.launch`
 
+args: 
+ - `robot_count:=n`
+ - `sim:=true/false`
+ - `planner:=`
+ - 
+Params/goal file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`
+ - For now, easiest to edit `navigate_multi.launch` to adjust params file
+
+Change ROS planner: `navlab_turtlebot/navlab_turtlebot_planning/launch/move_base_multi.launch`
+ - TEB planner or DWA planner
+
+TEB planner obstacles:\
+1. publish to topic: `/turtlebot1/move_base/TebLocalPlannerROS/obstacles`
 
 ## Troubleshooting
 If you get an error that says:

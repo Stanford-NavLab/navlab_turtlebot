@@ -157,19 +157,20 @@ class GradientPlanner:
             return goal_cost + obs_cost
 
         start_time = time.time()
-        # u0 = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
-        # res = minimize(cost, u0, method='L-BFGS-B', bounds=[(0, params.V_MAX), (-params.W_MAX, params.W_MAX)],
-        #             options={'disp': False,
-        #                      #'ftol': 1e-6
-        #                      })
-        # print("Time elapsed: {:.3f} s".format(time.time() - start_time))
-        # return res.x                                                           
-        u_samples = rand_in_bounds([0, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
-        costs = np.array([cost(u) for u in u_samples])
-        min_idx = np.argmin(costs)
-        opt_cost, opt_u = costs[min_idx], u_samples[min_idx]
+        u0 = rand_in_bounds([0.1, params.V_MAX, -params.W_MAX, params.W_MAX], 1)[0]
+        res = minimize(cost, u0, method='SLSQP', bounds=[(0.05, params.V_MAX), (-params.W_MAX, params.W_MAX)],
+                    options={'disp': True,
+                             #'ftol': 1e-6
+                             })
         print("Time elapsed: {:.3f} s".format(time.time() - start_time))
-        return opt_u
+        print("cost: ", res.fun)
+        return res.x                                                           
+        # u_samples = rand_in_bounds([0.0, params.V_MAX, -params.W_MAX, params.W_MAX], params.N_PLAN_MAX)
+        # costs = np.array([cost(u) for u in u_samples])
+        # min_idx = np.argmin(costs)
+        # opt_cost, opt_u = costs[min_idx], u_samples[min_idx]
+        # print("Time elapsed: {:.3f} s".format(time.time() - start_time))
+        # return opt_u
 
 
 

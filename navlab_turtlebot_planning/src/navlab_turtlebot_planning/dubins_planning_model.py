@@ -3,6 +3,20 @@
 """
 
 import numpy as np
+from sympy import symbols, lambdify, Array, sin, cos, diff
+
+import navlab_turtlebot_common.params as params
+
+# Generate symbolic dynamics
+x, y, th, v, w = symbols('x y th v w')
+
+x0 = Array([x, y, th])
+expr = x0
+for i in range(params.TRAJ_IDX_LEN):
+    expr = expr + params.DT * Array([v*cos(expr[2]), v*sin(expr[2]), w])
+
+dubins = lambdify([x, y, th, v, w], expr)
+
 
 
 def dubins_step(x, u, dt):
