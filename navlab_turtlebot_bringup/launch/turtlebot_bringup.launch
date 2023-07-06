@@ -12,13 +12,11 @@
 
     <!-- bringup turtlebot -->
     <include ns="$(arg robot_name)" file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch">
-      <arg name="multi_robot_name" value="turtlebot_core" />
+        <arg name="multi_robot_name" value="turtlebot_core" />
     </include>
 
     <group if="$(arg zed)">
-      <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_sensing)/launch/zedm.launch">
-        <arg name="robot_name" value="$(arg robot_name)" />
-      </include>
+      <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_sensing)/launch/zedm.launch"/>
     </group>
 
     <!-- move_base if using goal planner -->
