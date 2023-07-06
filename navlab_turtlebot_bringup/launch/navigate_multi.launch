@@ -11,13 +11,14 @@
   # whether or not to open rviz
   <arg name="open_rviz" default="true"/>
   # parameters for start and goal locations
-  <!-- <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/two_swap.yaml"/> -->
-  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/one_origin.yaml"/>
+  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/two_swap.yaml"/>
   # type of planner to start, defaults to no planner
-  <arg name="planner" default="goal"/>
-   <!-- <arg name="planner" default=""/> -->
+   <arg name="planner" default=""/>
   # VRPN server, defaults to Stanford Flight Room
   <arg name="server" default="mocap.local"/>
+  # Odometry source for planning and RVIZ visualization
+  # options are "mocap", "encoder", or "vio"
+  <arg name="odom_source" default="encoder"/>
 
   <!-- Load Turtlebot starting positions and goal locations -->
   <rosparam command="load" file="$(arg goal_file)" />
@@ -58,6 +59,7 @@
         <arg name="robot_name"  value="turtlebot1" />
         <arg name="sim"  value="$(arg sim)" />
         <arg name="planner"  value="$(arg planner)" />
+        <arg name="odom_source"  value="$(arg odom_source)" />
       </include>
     </group>
   </group>
@@ -70,6 +72,7 @@
         <arg name="robot_name"  value="turtlebot2" />
         <arg name="sim"  value="$(arg sim)" />
         <arg name="planner"  value="$(arg planner)" />
+        <arg name="odom_source"  value="$(arg odom_source)" />
       </include>
     </group>
   </group>
@@ -82,6 +85,7 @@
         <arg name="robot_name"  value="turtlebot3" />
         <arg name="sim"  value="$(arg sim)" />
         <arg name="planner"  value="$(arg planner)" />
+        <arg name="odom_source"  value="$(arg odom_source)" />
       </include>
     </group>
   </group>
@@ -94,6 +98,7 @@
         <arg name="robot_name"  value="turtlebot4" />
         <arg name="sim"  value="$(arg sim)" />
         <arg name="planner"  value="$(arg planner)" />
+        <arg name="odom_source"  value="$(arg odom_source)" />
       </include>
     </group>
   </group>
