@@ -3,7 +3,7 @@
   <arg name="robot_name" default="turtlebot1"/>
   <arg name="model" default="burger"/>
   <arg name="cmd_vel_topic" default="cmd_vel"/>
-  <arg name="odom_topic" default="odom" />
+  <arg name="odom_topic" default="mocap" />
   <arg name="move_forward_only" default="false"/>
   # other options for base_local_planner include:
   #   - teb_local_planner/TebLocalPlannerROS
@@ -15,7 +15,7 @@
   <group if="$(eval arg('base_local_planner') == 'teb_local_planner/TebLocalPlannerROS')">
     <param name="move_base/TebLocalPlannerROS/weight_kinematics_forward_drive" value="1000" if="$(arg move_forward_only)" />
     <param name="move_base/TebLocalPlannerROS/wheelbase" value="0.0" />
-    <param name="move_base/TebLocalPlannerROS/min_obstacle_dist" value="0.1" />    
+    <param name="move_base/TebLocalPlannerROS/min_obstacle_dist" value="0.1" />
   </group>
 
   <group if="$(eval arg('base_local_planner') == 'dwa_local_planner/DWAPlannerROS')">
@@ -48,7 +48,7 @@
 
     <!-- Remap for TF tree -->
     <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
-    <remap from="odom" to="$(arg odom_topic)"/>
+    <remap from="odom" to="odom_$(arg odom_topic)"/>
     <remap from="map" to="/map"/>
   </node>
 </launch>

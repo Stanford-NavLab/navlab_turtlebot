@@ -6,6 +6,9 @@
     <arg name="zed" default="false"/>
     # type of planner to start, defaults to no planner
     <arg name="planner" default=""/>
+    # Odometry source for planning and RVIZ visualization
+    # options are "mocap", "encoder", or "vio"
+    <arg name="odom_source" default="mocap"/>
 
     <!-- bringup turtlebot -->
     <include ns="$(arg robot_name)" file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch">
@@ -22,6 +25,7 @@
         <arg name="model" value="$(arg model)" />
         <arg name="robot_name" value="$(arg robot_name)" />
         <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+        <arg name="odom_topic" value="$(arg odom_source)"/>
       </include>
     </group>
 

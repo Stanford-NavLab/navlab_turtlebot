@@ -18,7 +18,7 @@
   <arg name="server" default="mocap.local"/>
   # Odometry source for planning and RVIZ visualization
   # options are "mocap", "encoder", or "vio"
-  <arg name="odom_source" default="encoder"/>
+  <arg name="odom_source" default="mocap"/>
 
   <!-- Load Turtlebot starting positions and goal locations -->
   <rosparam command="load" file="$(arg goal_file)" />

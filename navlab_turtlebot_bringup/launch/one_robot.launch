@@ -25,6 +25,14 @@
   <node pkg="navlab_turtlebot_sim" type="odom_tf_broadcaster.py" name="odom_tf_broadcaster"
       args="$(arg robot_name) $(arg odom_source)" output="screen"/>
 
+  <!-- static map publisher for each odom -->
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_encoder_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_encoder 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_mocap_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_mocap 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_vio_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_vio 100" />
+
   <!-- ################ -->
   <!-- SIMULATION NODES -->
   <!-- ################ -->
@@ -32,14 +40,6 @@
     <!-- Spawn the robot in Gazebo with ROS parameter initialization -->
     <node pkg="navlab_turtlebot_sim" type="spawn_model.py" name="navlab_spawn_urdf"
         args="$(arg robot_name)" output="screen"/>
-
-    <!-- static map publisher for each odom -->
-    <node pkg="tf" type="static_transform_publisher" name="map_odom_encoder_publisher"
-      args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_encoder 100" />
-    <node pkg="tf" type="static_transform_publisher" name="map_odom_mocap_publisher"
-      args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_mocap 100" />
-    <node pkg="tf" type="static_transform_publisher" name="map_odom_vio_publisher"
-      args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_vio 100" />
 
     <!-- move_base if using goal planner -->
     <group if="$(eval arg('planner') == 'goal')">
