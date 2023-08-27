@@ -3,6 +3,7 @@
 # Import libraries
 import rospy
 import numpy as np
+import argparse
 
 # Import message files
 from navlab_turtlebot_frs.msg import ZonotopeMsg, ZonotopeMsgArray, pZonotopeMsg, pZonotopeMsgArray, FRSArray
@@ -120,5 +121,9 @@ class frs_generator:
             rospy.sleep(self.rate)
 
 if __name__ == '__main__':
-    frs_gen = frs_generator()
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("-n", "--name", help="robot name")
+    args = argParser.parse_args()
+    
+    frs_gen = frs_generator(args.name)
     frs_gen.run()
