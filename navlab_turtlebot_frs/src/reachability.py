@@ -9,7 +9,7 @@ from probzonotope import probZonotope
 from utils import remove_zero_columns
 
 
-def compute_PRS(LPM, p_0, v_0, a_0, N=None):
+def compute_PRS(p_0, traj=None, N=50):
     """Compute Planning Reachable Set (PRS)
     
     PRS desribes the reachable positions of planned trajectories over a 
@@ -54,6 +54,7 @@ def compute_PRS(LPM, p_0, v_0, a_0, N=None):
         List of Zonotope objects describing reachable positions from planned trajectories
 
     """
+    """
     k_0 = np.hstack((v_0, a_0)).T
     # Form trajectory parameter space zonotope
     # V_pk_c = np.vstack((k_0, np.zeros(params.N_DIM)))
@@ -62,7 +63,24 @@ def compute_PRS(LPM, p_0, v_0, a_0, N=None):
     #print(V_pk_c, V_pk_G)
     V_pk = Zonotope(np.zeros((params.N_DIM,1)), params.V_MAX * np.eye(params.N_DIM))
     #print(V_pk)
+    """
+    PRS = N * [None]
+    V_pk = Zonotope(np.zeros((2,1)), .22 * np.eye(2))
     
+    for t in range(N):
+        t_sim = t * .1
+        # Ignoring acceleration and orientation, just gliding at top speed
+        if traj=None:
+            pos = t_sim * V_pk
+            PRS[i] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
+        else:
+            center = np.zeros((4,1))
+            center[:2] = trajectory[0][:,i].reshape(2,1)
+            # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
+            PRS[i] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+                                                                     [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+                                                                     [0,0,0,0],[0,0,0,0]]))
+    """
     if N is None:
         # Initialize
         N = len(LPM.time)
@@ -99,10 +117,10 @@ def compute_PRS(LPM, p_0, v_0, a_0, N=None):
                 speed_boost = Zonotope(np.zeros((4,1)), generators)
             # Update the state zonotopes
             pos = LPM.P_mat[2,i%hz] * V_pk
-            PRS[i] = pos.augment(V_pk) + np.vstack((init_traj[i%hz][:,None], np.zeros((params.N_DIM,1)))) + speed_boost + bonus
+            PRS[i] = pos.augment(V_pk) + np.vstack((init_traj[i%hz][:,None], np.zeros((params.N_DIM,1)))) + speed_boost + bonus"""
     return PRS
 
-def compute_FRS(LPM, p_0, v_0, a_0, traj=None, t=0, LPM_file=None, start=None, N=None):
+def compute_FRS(p_0, traj=None, N=50):
     """Compute FRS
     
     FRS = PRS + ERS
@@ -110,21 +128,14 @@ def compute_FRS(LPM, p_0, v_0, a_0, traj=None, t=0, LPM_file=None, start=None, N
     For, we use a constant zonotope for ERS. ERS includes robot body
     
     """
-    if not N is None:
-        FRS = N * [None]
-        PRS = compute_PRS(LPM, p_0, v_0, a_0, N=N)
-        ERS = Zonotope(np.zeros((2*params.N_DIM,1)), np.vstack(((params.ERS_MAG + params.R_BOT) * np.eye(params.N_DIM), np.zeros((params.N_DIM, params.N_DIM)))))
-
-        # Add ERS
-        for i, zono in enumerate(PRS):
-            FRS[i] = zono + ERS  
-        return FRS
-    
-    N=len(LPM.time)
     FRS = N * [None]
-    gFRS = N * [None]
+    PRS = compute_PRS(p_0, traj=traj, N=N)
     
-    if not traj is None or t != 0:
+    # If we are computing just a normal total FRS
+    if traj is None:
+        ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .178) * np.eye(2), np.zeros((2, 2)))))
+    else:
+        """
         PRS = []
         trajectory = traj
         for i in range(N):
@@ -132,26 +143,13 @@ def compute_FRS(LPM, p_0, v_0, a_0, traj=None, t=0, LPM_file=None, start=None, N
             center[:2] = trajectory[0][:,i].reshape(2,1)
             PRS.append(probZonotope(center, np.zeros((4,2)), np.array([[.028*np.exp(.05*(i+t)),-.096*np.exp(.017*(i+t)),0,0], \
                                                                        [-.096*np.exp(.017*(i+t)),.066*np.exp(.042*(i+t)),0,0], \
-                                                                       [0,0,0,0],[0,0,0,0]])))
-        ERS = probZonotope(np.zeros((2*params.N_DIM,1)), np.zeros((2*params.N_DIM,2)), np.array([[.1,0,0,0],[0,.1,0,0],[0,0,0,0],[0,0,0,0]]))
-        # Add ERS
-        for i, zono in enumerate(PRS):
-            gFRS[i] = zono + ERS
-            
-        return gFRS
-    else:
-        PRS = compute_PRS(LPM, p_0, v_0, a_0)
-        ERS = Zonotope(np.zeros((2*params.N_DIM,1)), np.vstack(((params.ERS_MAG + params.R_BOT) * np.eye(params.N_DIM), np.zeros((params.N_DIM, params.N_DIM)))))
-
-        # Add ERS
-        for i, zono in enumerate(PRS):
-            if start is None:
-                FRS[i] = zono + ERS  
-            else:
-                additional = Zonotope(np.zeros((2*params.N_DIM,1)), start.G)
-                FRS[i] = start + zono + ERS
+                                                                       [0,0,0,0],[0,0,0,0]])))"""
+        ERS = probZonotope(np.zeros((2*params.N_DIM,1)), np.zeros((2*params.N_DIM,2)), np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
         
-        return FRS
+    # Add ERS
+    for i, zono in enumerate(PRS):
+        FRS[i] = zono + ERS
+    return FRS
 
 def generate_collision_constraints_FRS(FRS, obs_map):
     """Generate collision constraints FRS

@@ -98,10 +98,10 @@ class frs_generator:
         """
         for i in range(self.n_bots):
             # Generate the first FRS (normal)
-            frss[i].append(compute_FRS(lpm, init_p, init_v, init_a, N=1200))
+            frss[i].append(compute_FRS(init_p, N=1200))
 
             # Generate the second FRS (pzonos)
-            frss[i].append(compute_FRS(lpm, init_p, init_v, init_a, traj=self.trajs[i], t=t_sim, LPM_file=LPM_file))
+            frss[i].append(compute_FRS(init_p, traj=self.trajs[i], N=1200))
 
             # Generate the third FRS (fault)
             frss[i].append(probZonotope(np.vstack((p_0s[:,i].reshape((2,1)),np.zeros((2,1)))),np.zeros((4,2)), \
