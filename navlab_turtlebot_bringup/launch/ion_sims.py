@@ -2,7 +2,7 @@ import roslaunch
 import rospy
 
 # Arguments/Parameters
-n_bots = 2
+rospy.set_param('n_bots', 2)
 n_sims = 2
 
 # Initialize things for launching launch file
