@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Goal planner for Turtlebots.
 
 Publishes new goals after checking all turtlebots have reached their
