@@ -151,6 +151,7 @@ def compute_FRS(p_0, traj=None, N=50):
         FRS[i] = zono + ERS
     return FRS
 
+"""
 def generate_collision_constraints_FRS(FRS, obs_map):
     """Generate collision constraints FRS
 
@@ -386,3 +387,4 @@ def check_collision_constraints_vectorized(A_con, b_con, v_peak):
     c = np.min(c)
     
     return c > 0 
+"""
