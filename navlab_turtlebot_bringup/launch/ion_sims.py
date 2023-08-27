@@ -11,10 +11,10 @@ roslaunch.configure_logging(uuid)
 cli_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/navigate_multi.launch', \
             'robot_count:=2', \
             'planner:=goal', \
-            'goal_file:=/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_sim/param/two_swap.yaml']
+            'goal_file:=/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_sim/param/two_swap.yaml' \
+            'map_file:=/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_sim/maps/flightroom.yaml']
 roslaunch_args = cli_args[1:]
 nm_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
-#launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file) #["/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/navigate_multi.launch"])
 
 # Initialize things for individual nodes
 launch = roslaunch.scriptapi.ROSLaunch()
