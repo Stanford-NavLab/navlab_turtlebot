@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
+  message_generation
 )
 
 ## System dependencies are found with CMake's conventions
@@ -49,8 +51,11 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
+   ZonotopeMsg.msg
+   ZonotopeMsgArray.msg
+   pZonotopeMsg.msg
+   pZonotopeMsgArray.msg
+   FRSArray.msg
 # )
 
 ## Generate services in the 'srv' folder
@@ -107,6 +112,7 @@ catkin_package(
 #  LIBRARIES navlab_turtlebot_frs
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
+  CATKIN_DEPENDS message_runtime
 )
 
 ###########
