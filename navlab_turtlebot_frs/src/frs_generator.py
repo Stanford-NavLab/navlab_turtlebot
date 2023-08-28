@@ -122,7 +122,7 @@ class frs_generator:
                     if i!=int(self.name[-1]):
                         rospy.Subscriber("/turtlebot" + str(i) + "2/move_base/TebLocalPlannerROS/global_plan", Path, self.traj_cb, (i))
             self.publish_frs()
-            rospy.sleep(self.rate)
+            self.rate.sleep()
 
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
