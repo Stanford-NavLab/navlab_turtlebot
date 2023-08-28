@@ -80,7 +80,7 @@ class frs_generator:
             representation.faultbased = third
             
             rows = np.hstack((np.array([t_sim]),third.generators.flatten()))
-            with open('happyfrsthird.csv', 'w') as csvfile:
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
