@@ -110,6 +110,7 @@ class frs_generator:
         """
         for i in range(self.n_bots):
             # Get the initial position
+            print(self.trajs[i])
             init_p = self.trajs[i][:,0]
             
             # Generate the first FRS (normal)
