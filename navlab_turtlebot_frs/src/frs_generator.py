@@ -58,9 +58,16 @@ class frs_generator:
                 zonomsg = ZonotopeMsg()
                 zonomsg.dim = 2
                 zonomsg.num_gen = zono.n_gen
-                zonomsg.generators = np.hstack((zono.c, zono.G))
+                zonomsg.generators = np.vstack((zono.c.T, zono.G.T))
                 first.zonotopes.append(zonomsg)
             representation.total = first
+            
+            rows = []
+            for t, zono in enumerate(first):
+                rows.append([[self.t_sim+t*.1] + list(zono.generators.flatten())])
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerows(rows)
             
             # Second
             second = pZonotopeMsgArray()
@@ -68,31 +75,31 @@ class frs_generator:
                 zonomsg = pZonotopeMsg()
                 zonomsg.dim = 2
                 zonomsg.num_gen = 2
-                zonomsg.generators = np.hstack((zono.c, zono.cov))
+                zonomsg.generators = np.vstack((zono.c.T, zonocov.T))
                 second.pzonotopes.append(zonomsg)
             representation.trajbased = second
             
+            rows = []
+            for t, zono in enumerate(second):
+                rows.append([[self.t_sim+t*.1] + list(zono.generators.flatten())])
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerows(rows)
+            
             # Third
-            print(self.frss[i][2])
             third = pZonotopeMsg()
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
             third.generators = np.vstack((self.frss[i][2].c.T, self.frss[i][2].cov.T))
-            print(third.generators)
             representation.faultbased = third
             
             rows = [[self.t_sim] + list(third.generators.flatten())]
-            print(rows)
             with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
             # Publish
             self.frs_pubs[i].publish(representation)
-            
-            # Log what you published
-            #with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrs.txt', 'w') as f:
-            #    f.write(str(third))
     
     def traj_cb(self, global_plan, args):
         """
