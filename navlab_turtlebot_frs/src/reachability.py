@@ -74,8 +74,8 @@ def compute_PRS(p_0, traj=None, N=50):
             pos = t_sim * V_pk
             PRS[t] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
         else:
-            if t == len(traj[0]):
-                break
+            # If the trajectory is shorter than the provided N, then cut off the PRS early
+            PRS = PRS[:len(traj[0])]
             center = np.zeros((4,1))
             center[:2] = traj[:,t].reshape(2,1)
             # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
@@ -146,6 +146,7 @@ def compute_FRS(p_0, traj=None, N=50):
             PRS.append(probZonotope(center, np.zeros((4,2)), np.array([[.028*np.exp(.05*(i+t)),-.096*np.exp(.017*(i+t)),0,0], \
                                                                        [-.096*np.exp(.017*(i+t)),.066*np.exp(.042*(i+t)),0,0], \
                                                                        [0,0,0,0],[0,0,0,0]])))"""
+        FRS = FRS[:len(traj[0])] # Same thing was with PRS
         ERS = probZonotope(np.zeros((4,1)), np.zeros((4,2)), np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
         
     # Add ERS
