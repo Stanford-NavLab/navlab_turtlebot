@@ -63,7 +63,7 @@ class frs_generator:
             representation.total = first
             
             rows = []
-            for t, zono in enumerate(first):
+            for t, zono in enumerate(first.zonotopes):
                 rows.append([[self.t_sim+t*.1] + list(zono.generators.flatten())])
             with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
@@ -80,7 +80,7 @@ class frs_generator:
             representation.trajbased = second
             
             rows = []
-            for t, zono in enumerate(second):
+            for t, zono in enumerate(second.pzonotopes):
                 rows.append([[self.t_sim+t*.1] + list(zono.generators.flatten())])
             with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
