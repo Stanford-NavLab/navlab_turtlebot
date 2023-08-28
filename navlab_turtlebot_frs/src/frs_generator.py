@@ -116,7 +116,7 @@ class frs_generator:
                 # Subscribe to the global plans for every other agent
                 for i in range(self.n_bots):
                     if i!=int(self.name[-1]):
-                        rospy.Subscriber("/turtlebot" + str(i) + "2/move_base/TebLocalPlannerROS/global_plan", self.traj_cb, (i))
+                        rospy.Subscriber("/turtlebot" + str(i) + "2/move_base/TebLocalPlannerROS/global_plan", Path, self.traj_cb, (i))
             self.publish_frs()
             rospy.sleep(self.rate)
 
