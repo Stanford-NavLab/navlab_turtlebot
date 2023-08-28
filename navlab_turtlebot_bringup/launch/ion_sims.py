@@ -30,7 +30,7 @@ for sim in range(n_sims):
     for i in range(n_bots):
         nodes.append(roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="-h -n turtlebot"+str(i)))
         processes.append(launch.launch(nodes[i]))
-        print(processes[-1].is_alive()
+        print(processes[-1].is_alive())
         
     #node = roslaunch.core.Node("navlab_turtlebot_obstacles", "ground_truth.py")
     #process = launch.launch(node)
