@@ -78,9 +78,11 @@ class frs_generator:
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
             third.generators = np.vstack((self.frss[i][2].c.T, self.frss[i][2].cov.T))
+            print(third.generators)
             representation.faultbased = third
             
             rows = [[self.t_sim] + list(third.generators.flatten())]
+            print(rows)
             with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
