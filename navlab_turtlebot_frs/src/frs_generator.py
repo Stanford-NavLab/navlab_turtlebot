@@ -88,6 +88,7 @@ class frs_generator:
             
             # Log what you published
             self.f.write(third)
+            self.f.close()
     
     def traj_cb(self, global_plan, args):
         """
