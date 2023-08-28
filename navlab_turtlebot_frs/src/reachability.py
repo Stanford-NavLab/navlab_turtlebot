@@ -67,15 +67,20 @@ def compute_PRS(p_0, traj=None, N=50):
     PRS = N * [None]
     V_pk = Zonotope(np.zeros((2,1)), .22 * np.eye(2))
     
-    for t in range(N):
+    if traj is None:
+        tf = N
+    else:
+        # If the trajectory is shorter than the provided N, then cut off the PRS early
+        PRS = PRS[:len(traj[0])]
+        tf = min(N,len(traj[0]))
+    
+    for t in range(tf):
         t_sim = t * .1
         # Ignoring acceleration and orientation, just gliding at top speed
         if traj is None:
             pos = t_sim * V_pk
             PRS[t] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
         else:
-            # If the trajectory is shorter than the provided N, then cut off the PRS early
-            PRS = PRS[:len(traj[0])]
             center = np.zeros((4,1))
             center[:2] = traj[:,t].reshape(2,1)
             # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
