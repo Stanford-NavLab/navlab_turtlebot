@@ -95,7 +95,7 @@ class frs_generator:
             traj[0][t] = global_plan.poses[t].pose.position.x
             traj[1][t] = global_plan.poses[t].pose.position.y
         self.trajs[args].append(traj)
-        self.received[args[0]] = 1
+        self.received[args] = 1
         self.update()
         
     def update(self):
