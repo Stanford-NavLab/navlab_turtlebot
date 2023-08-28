@@ -65,7 +65,7 @@ class frs_generator:
             rows = []
             for t, zono in enumerate(first.zonotopes):
                 rows.append([self.t_sim+t*.1] + list(zono.generators.flatten()))
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w', quoting=csv.QUOTE_NONE) as csvfile:
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
@@ -82,7 +82,7 @@ class frs_generator:
             rows = []
             for t, zono in enumerate(second.pzonotopes):
                 rows.append([self.t_sim+t*.1] + list(zono.generators.flatten()))
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w', quoting=csv.QUOTE_NONE) as csvfile:
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
@@ -94,7 +94,7 @@ class frs_generator:
             representation.faultbased = third
             
             rows = [[self.t_sim] + list(third.generators.flatten())]
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w', quoting=csv.QUOTE_NONE) as csvfile:
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
