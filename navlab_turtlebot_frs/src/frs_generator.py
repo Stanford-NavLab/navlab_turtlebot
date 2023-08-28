@@ -106,6 +106,9 @@ class frs_generator:
         Third: an FRS made of p-zonotopes representing the fault case
         """
         for i in range(self.n_bots):
+            # Get the initial position
+            init_p = self.trajs[i][:,0]
+            
             # Generate the first FRS (normal)
             self.frss[i].append(compute_FRS(init_p, N=1200))
 
