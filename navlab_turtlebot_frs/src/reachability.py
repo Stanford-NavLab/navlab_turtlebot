@@ -72,12 +72,14 @@ def compute_PRS(p_0, traj=None, N=50):
         # Ignoring acceleration and orientation, just gliding at top speed
         if traj==None:
             pos = t_sim * V_pk
-            PRS[i] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
+            PRS[t] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
         else:
+            if t == len(traj[0][0]):
+                break
             center = np.zeros((4,1))
-            center[:2] = trajectory[0][:,i].reshape(2,1)
+            center[:2] = traj[0][:,t].reshape(2,1)
             # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
-            PRS[i] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+            PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
                                                                      [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
                                                                      [0,0,0,0],[0,0,0,0]]))
     """
