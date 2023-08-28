@@ -15,13 +15,8 @@ from reachability import compute_FRS
 from probzonotope import probZonotope
 from zonotope import Zonotope
 
-print("the file opened")
-with open("/home/izzie/catkin_ws/src/navlab_turtlebot/sad_frs.txt", "w") as f:
-    f.write("i'm so sad")
-
 class frs_generator:
     def __init__(self, name=''):
-        print("I INITIALIZED")
         # General stuff
         self.name = name
         self.n_bots = rospy.get_param("/n_bots")
@@ -29,7 +24,6 @@ class frs_generator:
         self.frss = [[],[],[],[]]
         self.trajs = [[],[],[],[]]
         self.received = np.zeros((4,))
-        self.f = open('happyfrs.txt', 'w')
         
         # ROS stuff
         rospy.init_node(self.name + 'frs_generator', anonymous=True)
@@ -44,7 +38,6 @@ class frs_generator:
         """
         Publish all FRSs to different topics.
         """
-        print("I PUBLISHED")
         for i in range(self.n_bots):
             # Don't publish if we haven't received a trajectory yet
             if self.received[i] == 0:
@@ -89,15 +82,15 @@ class frs_generator:
             self.frs_pubs[i].publish(representation)
             
             # Log what you published
-            self.f.write(str(third))
-            self.f.close()
+            f = open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrs.txt', 'w')
+            f.write(str(third))
+            f.close()
     
     def traj_cb(self, global_plan, args):
         """
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
-        print("I RECEIVED A TRAJECTORY")
         traj = np.zeros((2,len(global_plan.poses)))
         for t in range(len(global_plan.poses)):
             traj[0][t] = global_plan.poses[t].pose.position.x
@@ -113,7 +106,6 @@ class frs_generator:
         Second: an FRS made of p-zonotopes along the trajectory
         Third: an FRS made of p-zonotopes representing the fault case
         """
-        print("I UPDATED MY FRS")
         for i in range(self.n_bots):
             # Generate the first FRS (normal)
             frss[i].append(compute_FRS(init_p, N=1200))
@@ -126,7 +118,6 @@ class frs_generator:
                                             np.vstack((np.eye(2), np.zeros((2,2))))))
     
     def run(self):
-        print("I STARTED RUNNING")
         while (not rospy.is_shutdown()):
             self.t_sim = rospy.get_time() - self.start
             # If we haven't received the trajectories yet
@@ -139,7 +130,6 @@ class frs_generator:
             self.rate.sleep()
 
 if __name__ == '__main__':
-    print("MAIN STARTED--------------------------------")
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-n", "--name", help="robot name")
     args, unknown = argParser.parse_known_args()
