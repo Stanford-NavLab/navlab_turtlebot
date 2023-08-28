@@ -15,6 +15,8 @@ from reachability import compute_FRS
 from probzonotope import probZonotope
 from zonotope import Zonotope
 
+print("the file opened")
+
 class frs_generator:
     def __init__(self, name=''):
         rospy.loginfo("I INITIALIZED")
@@ -130,6 +132,7 @@ class frs_generator:
             self.rate.sleep()
 
 if __name__ == '__main__':
+    rospy.loginfo("MAIN STARTED--------------------------------")
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-n", "--name", help="robot name")
     args = argParser.parse_args()
