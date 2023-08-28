@@ -146,7 +146,7 @@ def compute_FRS(p_0, traj=None, N=50):
             PRS.append(probZonotope(center, np.zeros((4,2)), np.array([[.028*np.exp(.05*(i+t)),-.096*np.exp(.017*(i+t)),0,0], \
                                                                        [-.096*np.exp(.017*(i+t)),.066*np.exp(.042*(i+t)),0,0], \
                                                                        [0,0,0,0],[0,0,0,0]])))"""
-        ERS = probZonotope(np.zeros((2*params.N_DIM,1)), np.zeros((2*params.N_DIM,2)), np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
+        ERS = probZonotope(np.zeros((4,1)), np.zeros((4,2)), np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
         
     # Add ERS
     for i, zono in enumerate(PRS):
