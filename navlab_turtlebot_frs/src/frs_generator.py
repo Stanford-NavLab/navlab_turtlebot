@@ -27,6 +27,7 @@ class frs_generator:
         self.frss = [[],[],[],[]]
         self.trajs = [[],[],[],[]]
         self.received = np.zeros((4,))
+        self.f = open('happyfrs.txt', 'w')
         
         # ROS stuff
         rospy.init_node(self.name + 'frs_generator', anonymous=True)
@@ -86,8 +87,7 @@ class frs_generator:
             self.frs_pubs[i].publish(representation)
             
             # Log what you published
-            with open('happyfrs.txt', 'a') as f:
-                f.write(third)
+            self.f.write(third)
     
     def traj_cb(self, global_plan, args):
         """
