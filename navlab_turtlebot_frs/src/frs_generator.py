@@ -75,7 +75,7 @@ class frs_generator:
                 zonomsg = pZonotopeMsg()
                 zonomsg.dim = 2
                 zonomsg.num_gen = 2
-                zonomsg.generators = np.vstack((zono.c.T, zonocov.T))
+                zonomsg.generators = np.vstack((zono.c.T, zono.cov.T))
                 second.pzonotopes.append(zonomsg)
             representation.trajbased = second
             
