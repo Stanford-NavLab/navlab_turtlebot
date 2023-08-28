@@ -16,7 +16,7 @@ from probzonotope import probZonotope
 from zonotope import Zonotope
 
 print("the file opened")
-with open("sad_frs.txt", "w") as f:
+with open("sad_frs.txt", "w+") as f:
     f.write("i'm so sad")
 
 class frs_generator:
