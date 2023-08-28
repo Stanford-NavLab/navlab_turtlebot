@@ -4,7 +4,7 @@ import rospy
 # Arguments/Parameters
 n_bots = 2
 rospy.set_param('n_bots', n_bots)
-n_sims = 2
+n_sims = 1
 
 # Initialize things for launching launch file
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
@@ -25,13 +25,17 @@ for sim in range(n_sims):
     launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
     launch_nm.start()
     rospy.loginfo("started")
+    nodes = []
+    processes = []
     for i in range(n_bots):
-        node = roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="-h -n turtlebot"+str(i))
-        process = launch.launch(node)
+        nodes.append(roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="-h -n turtlebot"+str(i)))
+        processes.append(launch.launch(nodes[i]))
+        print(processes[-1].is_alive()
+        
     #node = roslaunch.core.Node("navlab_turtlebot_obstacles", "ground_truth.py")
     #process = launch.launch(node)
     #print(process.is_alive())
-    for i in range(30):
+    for i in range(15):
         print(i)
         rospy.sleep(1)
     #process.stop()
