@@ -16,6 +16,8 @@ from probzonotope import probZonotope
 from zonotope import Zonotope
 
 print("the file opened")
+with open("sad_frs.txt", "w") as f:
+    f.write("i'm so sad")
 
 class frs_generator:
     def __init__(self, name=''):
@@ -37,9 +39,6 @@ class frs_generator:
         self.rate = rospy.Rate(10)
         self.start = rospy.get_time()
         self.t_sim = 0
-        
-        with open("sad_frs.txt", "w") as f:
-            f.write("i'm so sad")
         
     def publish_frs(self):
         """
@@ -90,7 +89,7 @@ class frs_generator:
             self.frs_pubs[i].publish(representation)
             
             # Log what you published
-            self.f.write(third)
+            self.f.write(str(third))
             self.f.close()
     
     def traj_cb(self, global_plan, args):
