@@ -38,6 +38,9 @@ class frs_generator:
         self.start = rospy.get_time()
         self.t_sim = 0
         
+        with open("sad_frs.txt", "w") as f:
+            f.write("i'm so sad")
+        
     def publish_frs(self):
         """
         Publish all FRSs to different topics.
