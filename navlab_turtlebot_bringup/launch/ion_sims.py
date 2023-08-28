@@ -26,7 +26,7 @@ for sim in range(n_sims):
     launch_nm.start()
     rospy.loginfo("started")
     for i in range(n_bots):
-        node = roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="-n turtlebot"+str(n_bots))
+        node = roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="turtlebot"+str(n_bots))
         process = launch.launch(node)
     #node = roslaunch.core.Node("navlab_turtlebot_obstacles", "ground_truth.py")
     #process = launch.launch(node)
