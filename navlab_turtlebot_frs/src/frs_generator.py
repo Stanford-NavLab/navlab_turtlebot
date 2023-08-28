@@ -72,7 +72,7 @@ class frs_generator:
             representation.trajbased = second
             
             # Third
-            third = pZonotope()
+            third = pZonotopeMsg()
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
             third.generators = np.hstack((self.frss[i][2].c, self.frss[i][2].cov))
