@@ -82,9 +82,8 @@ class frs_generator:
             self.frs_pubs[i].publish(representation)
             
             # Log what you published
-            f = open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrs.txt', 'w')
-            f.write(str(third))
-            f.close()
+            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrs.txt', 'w') as f:
+                f.write(str(third))
     
     def traj_cb(self, global_plan, args):
         """
