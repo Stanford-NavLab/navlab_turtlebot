@@ -32,7 +32,7 @@ class frs_generator:
         rospy.init_node(self.name + 'frs_generator', anonymous=True)
         self.frs_pubs = []
         for i in range(self.n_bots):
-            self.frs_pubs.append(rospy.Publisher(self.name + str(i) + 'frs', FRSArray, queue_size=10))
+            self.frs_pubs.append(rospy.Publisher(self.name + "/" + str(i) + '/frs', FRSArray, queue_size=10))
         self.rate = rospy.Rate(10)
         self.start = rospy.get_time()
         self.t_sim = 0
@@ -84,6 +84,10 @@ class frs_generator:
             
             # Publish
             self.frs_pubs[i].publish(representation)
+            
+            # Log what you published
+            with open('happyfrs.txt', 'a') as f:
+                f.write(third)
     
     def traj_cb(self, global_plan, args):
         """
