@@ -70,7 +70,7 @@ def compute_PRS(p_0, traj=None, N=50):
     for t in range(N):
         t_sim = t * .1
         # Ignoring acceleration and orientation, just gliding at top speed
-        if traj==None:
+        if traj is None:
             pos = t_sim * V_pk
             PRS[t] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
         else:
