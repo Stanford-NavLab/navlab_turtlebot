@@ -77,7 +77,7 @@ class frs_generator:
             third = pZonotopeMsg()
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
-            third.generators = np.vstack((self.frss[i][2].c.reshape((1,4)), self.frss[i][2].cov.reshape((2,4))))
+            third.generators = np.vstack((self.frss[i][2].c.T, self.frss[i][2].cov.T))
             representation.faultbased = third
             
             rows = [[self.t_sim] + list(third.generators.flatten())]
