@@ -39,6 +39,10 @@ class frs_generator:
         Publish all FRSs to different topics.
         """
         for i in range(self.n_bots):
+            # Don't publish if we haven't received a trajectory yet
+            if self.received[i] == 0:
+                break
+            
             representation = FRSArray()
             # 50% chance of random communications loss every second (given one of the other two didn't happen)
             # 50% chance that the comms are broken but it's still moving
