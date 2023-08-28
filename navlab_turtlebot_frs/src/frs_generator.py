@@ -73,6 +73,7 @@ class frs_generator:
             representation.trajbased = second
             
             # Third
+            print(self.frss[i][2])
             third = pZonotopeMsg()
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
