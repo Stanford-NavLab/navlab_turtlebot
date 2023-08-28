@@ -73,8 +73,8 @@ class Zonotope(object):
             G = other * self.G 
         # Other is a matrix
         elif type(other) is np.ndarray:
-            c = other @ self.c
-            G = other @ self.G 
+            c = np.matmul(other, self.c)
+            G = np.matmul(other, self.G)
         return Zonotope(c,G) 
     
 
@@ -86,8 +86,8 @@ class Zonotope(object):
             G = other * self.G 
         # Other is a matrix
         elif type(other) is np.ndarray:
-            c = self.c @ other
-            G = self.G @ other
+            c = np.matmul(self.c, other)
+            G = np.matmul(self.G, other)
         return Zonotope(c,G) 
 
 
@@ -100,7 +100,7 @@ class Zonotope(object):
         c = self.c
         G = self.G 
         factors = -1 + 2 * np.random.rand((G.shape[1],n_points))
-        p = c + G @ factors
+        p = c + np.matmul(G, factors)
         return p
 
     
@@ -164,7 +164,7 @@ class Zonotope(object):
 
         newG = G
         newG = np.delete(newG, slice_idx, axis=1)
-        newc = c+ G[:,slice_idx] @ slice_lambda
+        newc = c+ np.matmul(G[:,slice_idx], slice_lambda)
 
         return Zonotope(newc, newG)
 
@@ -227,9 +227,9 @@ class Zonotope(object):
         # Normalize normal vectors
         C = np.divide(C, np.linalg.norm(C, axis=0)).T
         # Build d vector
-        deltaD = np.sum(np.abs(C @ G).T, axis=0)[:,None]
+        deltaD = np.sum(np.abs(np.matmul(C, G)).T, axis=0)[:,None]
         # Compute dPos, dNeg
-        d = C @ c
+        d = np.matmul(C, c)
 
         A = np.vstack((C, -C))
         b = np.vstack((d + deltaD, -d + deltaD))
@@ -254,7 +254,7 @@ class Zonotope(object):
 
         """
         A, b = self.halfspace()
-        return np.all(A @ x <= b)
+        return np.all(np.matmul(A, x) <= b)
 
 
     def delete_zeros(self):
@@ -331,7 +331,7 @@ class Zonotope(object):
             
             # Generate vertices for a unit parallelotope
             vert = np.array(np.meshgrid([1, -1], [1, -1], [1, -1])).reshape(3,-1)
-            V = c + G[:,:n] @ vert 
+            V = c + np.matmul(G[:,:n], vert)
             
             #TODO: rest unimplemented
 
