@@ -40,9 +40,11 @@ class frs_generator:
         """
         for i in range(self.n_bots):
             # Don't publish if we haven't received a trajectory yet
+            print(self.received,i)
             if self.received[i] == 0:
                 break
             
+            print(self.frss[i])
             representation = FRSArray()
             # 50% chance of random communications loss every second (given one of the other two didn't happen)
             # 50% chance that the comms are broken but it's still moving
