@@ -4,6 +4,7 @@
 import rospy
 import numpy as np
 import argparse
+import csv
 
 # Import message files
 from navlab_turtlebot_frs.msg import ZonotopeMsg, ZonotopeMsgArray, pZonotopeMsg, pZonotopeMsgArray, FRSArray
@@ -78,12 +79,17 @@ class frs_generator:
             third.generators = np.hstack((self.frss[i][2].c, self.frss[i][2].cov))
             representation.faultbased = third
             
+            rows = np.hstack((np.array([t_sim]),third.generators.flatten()))
+            with open('happyfrsthird.csv', 'w') as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerows(rows)
+            
             # Publish
             self.frs_pubs[i].publish(representation)
             
             # Log what you published
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrs.txt', 'w') as f:
-                f.write(str(third))
+            #with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrs.txt', 'w') as f:
+            #    f.write(str(third))
     
     def traj_cb(self, global_plan, args):
         """
