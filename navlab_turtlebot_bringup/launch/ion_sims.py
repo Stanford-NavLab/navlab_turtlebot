@@ -18,7 +18,7 @@ nm_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_ar
 ion_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/ion-stuff.launch', \
             'name:=turtlebot1']
 roslaunch_ionargs = ion_args[1:]
-ion_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
+ion_file = [(roslaunch.rlutil.resolve_launch_arguments(ion_args)[0], roslaunch_ionargs)]
 
 # Initialize things for individual nodes
 launch = roslaunch.scriptapi.ROSLaunch()
