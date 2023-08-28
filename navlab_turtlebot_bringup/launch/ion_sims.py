@@ -15,6 +15,10 @@ cli_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup
             'goal_file:=/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_sim/param/two_swap.yaml']
 roslaunch_args = cli_args[1:]
 nm_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
+ion_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/ion-stuff.launch', \
+            'name:=turtlebot1']
+roslaunch_ionargs = ion_args[1:]
+ion_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
 
 # Initialize things for individual nodes
 launch = roslaunch.scriptapi.ROSLaunch()
@@ -25,12 +29,17 @@ for sim in range(n_sims):
     launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
     launch_nm.start()
     rospy.loginfo("started")
-    nodes = []
+    
+    launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
+    launch_ion.start()
+    rospy.loginfo("hopefully finally")
+    
+    '''nodes = []
     processes = []
     for i in range(n_bots):
         nodes.append(roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="-h -n turtlebot"+str(i)))
         processes.append(launch.launch(nodes[i]))
-        print(processes[-1].is_alive())
+        print(processes[-1].is_alive())'''
         
     #node = roslaunch.core.Node("navlab_turtlebot_obstacles", "ground_truth.py")
     #process = launch.launch(node)

@@ -1,0 +1,6 @@
+<launch>
+  <arg name="robot_name" default="turtlebot1"/>
+  
+  <node name="$(arg robot_name)_frsnode" pkg="navlab_turtlebot_frs" type="frs_generator.py" output="screen" args="-n $(arg robot_name)"></node>
+
+</launch>
