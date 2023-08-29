@@ -168,6 +168,8 @@ class frs_generator:
             for i in range(self.n_bots):
                 # If we haven't received the trajectory yet
                 if self.received[i]==0 and i!=int(self.name[-1]):
+                    print(i)
+                    print("\n\n\n")
                     rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan", Path, self.traj_cb, (i))
             self.publish_frs()
             self.rate.sleep()
