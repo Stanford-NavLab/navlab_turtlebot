@@ -108,19 +108,21 @@ class frs_generator:
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
-        # Just once get goals. Do this here so it happens after params are set but pretty much immediately
-        if args==1:
-            for i in range(self.n_bots):
-                self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
-                                            rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
-        
-        self.received[args] = 1
-        traj = np.zeros((2,len(plan.poses)))
-        for t in range(len(plan.poses)):
-            traj[0][t] = plan.poses[t].pose.position.x
-            traj[1][t] = plan.poses[t].pose.position.y
-        self.trajs[args] = traj
-        self.update(args)
+        # If this hasn't been done for this bot before...
+        if self.received[args]==0:
+            # Just once get goals. Do this here so it happens after params are set but pretty much immediately
+            if args==1:
+                for i in range(self.n_bots):
+                    self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
+                                                rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
+
+            self.received[args] = 1
+            traj = np.zeros((2,len(plan.poses)))
+            for t in range(len(plan.poses)):
+                traj[0][t] = plan.poses[t].pose.position.x
+                traj[1][t] = plan.poses[t].pose.position.y
+            self.trajs[args] = traj
+            self.update(args)
         
     def update(self, args):
         """
@@ -162,8 +164,8 @@ class frs_generator:
             self.t_sim = rospy.get_time() - self.start
             # Subscribe to the global plans for every other agent
             for i in range(self.n_bots):
-                # If we haven't received the trajectory yet
-                if self.received[i]==0 and i!=int(self.name[-1])-1:
+                # If this isn't the same as the main bot
+                if i!=int(self.name[-1])-1:
                     rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan", Path, self.traj_cb, (i))
             self.publish_frs()
             self.rate.sleep()
