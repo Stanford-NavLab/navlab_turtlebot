@@ -92,11 +92,11 @@ def compute_FRS(p_0, traj=None, N=50):
     
     # If we are computing just a normal total FRS
     if traj is None:
-        ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .178) * np.eye(2), np.zeros((2, 2)))))
+        ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .178/2) * np.eye(2), np.zeros((2, 2)))))
     else:
         FRS = FRS[:len(traj[0])] # Same thing was with PRS
         ERS = probZonotope(np.zeros((4,1)), \
-                           np.vstack((.178 * np.eye(2), np.zeros((2, 2)))), \
+                           np.vstack((.178/2 * np.eye(2), np.zeros((2, 2)))), \
                            np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
         
     # Add ERS

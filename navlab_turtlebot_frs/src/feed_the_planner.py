@@ -30,6 +30,12 @@ class feed_the_planner:
         self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
+        self.stay_away = []
+        for i in range(self.n_bots):
+            self.stay_away.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/start_x"), \
+                                            rospy.get_param("/turtlebot"+str(i+1)+"/start_y")]))
+            self.stay_away.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
+                                            rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
         
         # ROS stuff
         rospy.init_node('feed_the_planner', anonymous=True)
@@ -43,9 +49,15 @@ class feed_the_planner:
         Make some random obstacles.
         """
         for i in range(self.n_obs):
-            # Random locations are in 5x5 square off-center from origin
-            loc = np.random.rand(2)*np.array([-5, 5]) - np.array([0, 2.5])
-            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=loc[0],y=loc[1])]),radius=1)
+            viable = False
+            while not viable:
+                # Random locations are in 5x5 square off-center from origin
+                loc = np.random.rand(2)*np.array([-5, 5]) - np.array([0, 2.5])
+                obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=loc[0],y=loc[1])]),radius=1)
+                viable = True
+                for pt in self.stay_away:
+                    # Generate new obstacles until they aren't intersecting the starting or goal positions
+                    viable = viable and not self.check_range(obstacle,pt,.178/2+.5)
             self.obs.obstacles.append(obstacle)
     
     def update(self,bot):
@@ -53,16 +65,15 @@ class feed_the_planner:
         Update the list of obstacles that each bot can see.
         """
         for i, item in enumerate(self.obs.obstacles):
-            if self.vis_trck[i][bot] == 0 and self.check_range(item, bot):
+            if self.vis_trck[i][bot] == 0 and self.check_range(item, self.curr_locs[bot], self.vis_rad):
                 self.vis_obs[bot].obstacles.append(item)
                     
-    def check_range(self, obstacle, bot):
+    def check_range(self, obstacle, bot_loc, rng):
         """
-        Check if the bot is close enough to the obstacle to see it.
+        Check if the bot is close enough to the obstacle to see it or hit it.
         """
         obs_loc = np.array([obstacle.polygon.points[0].x, obstacle.polygon.points[0].y])
-        bot_loc = self.curr_locs[bot]
-        return np.sum((obs_loc - bot_loc)**2)**.5 <= self.vis_rad
+        return np.sum((obs_loc - bot_loc)**2)**.5 <= rng
     
     def publish(self):
         """

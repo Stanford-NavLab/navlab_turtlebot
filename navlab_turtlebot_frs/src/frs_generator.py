@@ -134,7 +134,7 @@ class frs_generator:
 
                 # Generate the third FRS (fault)
                 self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \
-                                                 np.vstack((np.eye(2)*.178, np.zeros((2,2)))), \
+                                                 np.vstack((np.eye(2)*.178/2, np.zeros((2,2)))), \
                                                  np.vstack((np.eye(2), np.zeros((2,2))))))
     
     def run(self):
