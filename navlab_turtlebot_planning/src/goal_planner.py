@@ -60,7 +60,7 @@ class GoalPlanner():
         # key is the turtlebot identifier (whatever follows turtlebot)
         # value is the index of their starting goal position
         with self.lock:
-            self.current_goal_idx = {str(i+1):i for i in range(len(self.goals))}
+            self.current_goal_idx = {str(i+1):i for i in range(rospy.get_param("/n_bots"))}
             self.goal_distances = {}
 
         # Initialize ROS node.
