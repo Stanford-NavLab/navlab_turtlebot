@@ -27,7 +27,7 @@ class feed_the_planner:
         self.generate_obstacles()
         self.curr_locs = [None,None,None,None]
         self.vis_trck = np.zeros((self.n_obs,self.n_bots))
-        self.vis_obs = [ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[]), \
+        self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
         
@@ -40,7 +40,7 @@ class feed_the_planner:
      
     def generate_obstacles(self):
         for i in range(self.n_obs):
-            obstacle = ObstacleMsg(header=Header(),polygon=Polygon(points=[Point32(x=1,y=1)]),radius=1)
+            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1)]),radius=1)
             self.obs.obstacles.append(obstacle)
     
     def update(self):
