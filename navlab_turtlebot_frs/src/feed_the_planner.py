@@ -99,15 +99,15 @@ class feed_the_planner:
             if (not self.saved_odom is None) and self.saved_odom.shape[1] < 120/.1:
                 # delete the last, bad saved odometry
                 df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
-                print("df bullshit")
-                print(df)
+                #print("df bullshit")
+                #print(df)
                 df = df.drop(df.index[-1])
-                print(" ")
-                print(df)
+                #print(" ")
+                #print(df)
                 df = df.drop(df.index[-1])
-                print(" ")
-                print(df)
-                print("----")
+                #print(" ")
+                #print(df)
+                #print("----")
                 df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1))))
             else:

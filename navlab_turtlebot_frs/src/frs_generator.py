@@ -167,7 +167,7 @@ class frs_generator:
             # Subscribe to the global plans for every other agent
             for i in range(self.n_bots):
                 # If we haven't received the trajectory yet
-                if self.received[i]==0 and i!=int(self.name[-1]):
+                if self.received[i]==0 and i!=int(self.name[-1])-1:
                     print(i)
                     print("\n\n\n")
                     rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan", Path, self.traj_cb, (i))
