@@ -28,7 +28,7 @@ class feed_the_planner:
         rospy.init_node(self.name + 'feed_the_planner', anonymous=True)
         self.pubs = []
         for i in range(self.n_bots):
-            self.pubs.append(rospy.Publisher("/turtlebot"+ str(i) + "/move_base/TebLocalPlannerROS/obstacles", ObstacleArrayMsg, queue_size=10))
+            self.pubs.append(rospy.Publisher("/turtlebot"+ str(i+1) + "/move_base/TebLocalPlannerROS/obstacles", ObstacleArrayMsg, queue_size=10))
         self.rate = rospy.Rate(10)
      
     def generate_obstacles(self):
