@@ -59,7 +59,7 @@ class feed_the_planner:
         Publish the obstacles to different topics.
         """
         for i in range(self.n_bots):
-            self.pubs[i].publish(self.vis_obs)
+            self.pubs[i].publish(self.vis_obs[i])
     
     def odom_cb(self, odom, args):
         """
