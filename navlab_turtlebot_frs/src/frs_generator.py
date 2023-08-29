@@ -150,7 +150,7 @@ class frs_generator:
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerows(rows)
                 with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
-                    f.write(rospy.get_param("/split"))
+                    f.write(str(rospy.get_param("/split"))+"\n")
 
         # Generate the third FRS (fault)
         self.frss[args].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \

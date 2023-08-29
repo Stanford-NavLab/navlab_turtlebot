@@ -74,8 +74,6 @@ def compute_PRS(p_0, traj=None, N=50, split=None):
             PRS[t] = pos.augment(V_pk) + np.vstack((p_0[:,None], np.zeros((2,1))))
         else:
             center = np.zeros((4,1))
-            print(center[:2])
-            print(traj[:,t].reshape(2,1))
             center[:2] = traj[:,t].reshape(2,1)
             # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
             if t <= split:
