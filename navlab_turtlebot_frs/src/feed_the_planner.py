@@ -8,9 +8,9 @@ import csv
 
 # Import message files
 from navlab_turtlebot_frs.msg import ZonotopeMsg, ZonotopeMsgArray, pZonotopeMsg, pZonotopeMsgArray, FRSArray
-from nav_msgs.msg import Path
+from nav_msgs.msg import Path, Odometry
 from costmap_converter.msg import ObstacleArrayMsg, ObstacleMsg
-from geometry_msgs.msg import PoseStamped, Pose, Point, Polygon, Point32
+from geometry_msgs.msg import PoseStamped, Pose, Point, Polygon, Point32,, PoseWithCovariance
 
 # Import functions from other python files
 from reachability import compute_FRS
@@ -21,8 +21,13 @@ class feed_the_planner:
     def __init__(self):
         # General stuff
         self.n_bots = rospy.get_param("/n_bots")
+        self.n_obs = 3
         self.obs = ObstacleArrayMsg()
         self.generate_obstacles()
+        self.curr_locs = [None,None,None,None]
+        self.vis_trck = np.zeros((self.n_obs,self.n_bots))
+        self.vis_obs = [ObstacleArrayMsg(),ObstacleArrayMsg(),ObstacleArrayMsg(),ObstacleArrayMsg()]
+        self.vis_rad = 2 # m
         
         # ROS stuff
         rospy.init_node('feed_the_planner', anonymous=True)
@@ -32,36 +37,40 @@ class feed_the_planner:
         self.rate = rospy.Rate(10)
      
     def generate_obstacles(self):
-        obs1 = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1),Point32(x=1,y=5)]))
-        self.obs.obstacles.append(obs1)
-        obs2 = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=-1),Point32(x=1,y=-5)]))
-        self.obs.obstacles.append(obs2)
-        obs3 = ObstacleMsg(polygon=Polygon(points=[Point32(x=4.5,y=.5),Point32(x=4.5,y=-.5),Point32(x=5.5,y=-.5),Point32(x=5.5,y=.5)]))
-        self.obs.obstacles.append(obs3)
+        for i in range(self.n_obs):
+            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1)],radius=1))
+            self.obs.obstacles.append(obstacle)
+    
+    def update(self):
+        for i, item in enumerate(self.obs.obstacles):
+            for bot in range(self.n_bots):
+                if self.vis_track[i][bot+1] == 0 and self.check_range(item, bot+1):
+                    self.vis_obs[bot].obstacles.append(item)
+                    
+    def check_range(self, obstacle, bot):
+        obs_loc = np.array([obstacle.polygon.points[0].x, obstacle.polygon.points[0].y])
+        bot_loc = self.curr_locs[bot]
+        return np.sum((obs_loc - bot_loc)**2)**.5 <= self.vis_rad
     
     def publish(self):
         """
         Publish the obstacles to different topics.
         """
         for i in range(self.n_bots):
-            self.pubs[i].publish(self.obs)
+            publishable = ObstacleArrayMsg()
+            self.update()
+            self.pubs[i].publish(self.vis_obs)
     
-    '''def traj_cb(self, global_plan, args):
+    def odom_cb(self, odom, args):
         """
-        Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
+        Save the current positions of the turtlebots.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
-        traj = np.zeros((2,len(global_plan.poses)))
-        for t in range(len(global_plan.poses)):
-            traj[0][t] = global_plan.poses[t].pose.position.x
-            traj[1][t] = global_plan.poses[t].pose.position.y
-        self.trajs[args] = traj
-        self.update()
-        self.received[args] = 1'''
+        self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
     
     def run(self):
         while (not rospy.is_shutdown()):
-            'rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/global_plan", Path, self.traj_cb, (i))'
+            rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
             self.publish()
             self.rate.sleep()
 
