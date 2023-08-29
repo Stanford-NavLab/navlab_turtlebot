@@ -110,6 +110,7 @@ def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
             y = goal[1] - traj[1,-1]
             hyp = (x**2 + y**2)**.5
             scale = 2/hyp
+            print(traj[0,-1],goal[0])
             x_pts = np.arange(traj[0,-1], goal[0], x*scale)
             y_pts = np.arange(traj[1,-1], goal[1], y*scale)
             extension = np.hstack((x_pts.reshape((1,len(x_pts))), y_pts.reshape((1,len(y_pts)))))

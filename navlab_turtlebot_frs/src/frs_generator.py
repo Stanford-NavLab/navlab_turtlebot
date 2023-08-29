@@ -114,7 +114,6 @@ class frs_generator:
                 self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
                                             rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
         
-        print(self.received)
         self.received[args] = 1
         traj = np.zeros((2,len(plan.poses)))
         for t in range(len(plan.poses)):
@@ -171,8 +170,6 @@ class frs_generator:
             for i in range(self.n_bots):
                 # If we haven't received the trajectory yet
                 if self.received[i]==0 and i!=int(self.name[-1])-1:
-                    print(i)
-                    print("\n\n\n")
                     rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan", Path, self.traj_cb, (i))
             self.publish_frs()
             self.rate.sleep()
