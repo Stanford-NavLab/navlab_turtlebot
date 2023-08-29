@@ -111,16 +111,16 @@ class frs_generator:
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
+        self.received[args] = 1
         traj = np.zeros((2,len(plan.poses)))
         for t in range(len(plan.poses)):
             traj[0][t] = plan.poses[t].pose.position.x
             traj[1][t] = plan.poses[t].pose.position.y
         self.trajs[args] = traj
         with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/plans.txt","a") as f:
-            print("got here")
+            print("got here",args)
             f.write(str(traj.shape)+" "+str(plan.poses[-1].header))
         self.update()
-        self.received[args] = 1
         
     def update(self):
         """
