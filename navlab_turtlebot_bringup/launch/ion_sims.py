@@ -5,6 +5,7 @@ import rospy
 n_bots = 2
 rospy.set_param('n_bots', n_bots)
 n_sims = 1
+sim_len = 30
 
 # Initialize things for launching launch file
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
@@ -44,7 +45,7 @@ for sim in range(n_sims):
     #node = roslaunch.core.Node("navlab_turtlebot_obstacles", "ground_truth.py")
     #process = launch.launch(node)
     #print(process.is_alive())
-    for i in range(15):
+    for i in range(sim_len):
         print(i)
         rospy.sleep(1)
     #process.stop()
