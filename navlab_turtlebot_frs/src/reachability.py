@@ -54,16 +54,6 @@ def compute_PRS(p_0, traj=None, N=50):
         List of Zonotope objects describing reachable positions from planned trajectories
 
     """
-    """
-    k_0 = np.hstack((v_0, a_0)).T
-    # Form trajectory parameter space zonotope
-    # V_pk_c = np.vstack((k_0, np.zeros(params.N_DIM)))
-    # V_pk_c = V_pk_c.reshape((-1,1), order='F')
-    # V_pk_G = np.kron(np.eye(params.N_DIM), np.array([0,0,params.V_MAX])[:,None])
-    #print(V_pk_c, V_pk_G)
-    V_pk = Zonotope(np.zeros((params.N_DIM,1)), params.V_MAX * np.eye(params.N_DIM))
-    #print(V_pk)
-    """
     PRS = N * [None]
     V_pk = Zonotope(np.zeros((2,1)), .22 * np.eye(2))
     
@@ -87,44 +77,6 @@ def compute_PRS(p_0, traj=None, N=50):
             PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
                                                                      [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
                                                                      [0,0,0,0],[0,0,0,0]]))
-    """
-    if N is None:
-        # Initialize
-        N = len(LPM.time)
-        PRS = N * [None]
-
-        # Equation 6.10 from Shreyas' dissertation
-        init_traj = LPM.P_mat.T[:,:2] @ k_0 + p_0.flatten()  # trajectory due to initial conditions only
-
-        #PRS[0] = Zonotope(np.zeros((2*params.N_DIM,1)), np.zeros((2*params.N_DIM,1))) << WTF DID THIS DO
-
-        # For now, we only consider fixed v_0 and a_0
-        # TODO: handle zonotope v_0 and a_0
-        for i in range(N): # range(1,N): << PART TWO OF WHY, JUST WHY
-            pos = LPM.P_mat[2,i] * V_pk  # position zonotope
-            PRS[i] = pos.augment(V_pk) + np.vstack((init_traj[i][:,None], np.zeros((params.N_DIM,1))))
-    else:  
-        PRS = N * [None]
-        init_p = p_0
-        init_v = v_0
-        init_a = a_0
-        k_0 = np.hstack((v_0, a_0)).T
-        bonus = np.zeros((4,1))
-        speed_boost = np.zeros((4,1))
-        init_traj = LPM.P_mat.T[:,:2] @ k_0 + init_p.flatten()
-        hz = 16 # Replans at this rate result in largest starting velocity
-        k_boost = np.array([[2,2],[0,0]])
-        new_traj = LPM.P_mat.T[:,:2] @ k_boost
-        for i in range(N):
-            # If on a new planning cycle, add a speed boost to account for max velocity and add onto the last zonotope
-            if i % hz == 0 and i!=0:
-                bonus = Zonotope(np.zeros((4,1)), PRS[i-1].G)
-            if i >= hz:
-                generators = np.vstack((new_traj[i%hz,:]*np.eye(2),np.zeros((2,2))))
-                speed_boost = Zonotope(np.zeros((4,1)), generators)
-            # Update the state zonotopes
-            pos = LPM.P_mat[2,i%hz] * V_pk
-            PRS[i] = pos.augment(V_pk) + np.vstack((init_traj[i%hz][:,None], np.zeros((params.N_DIM,1)))) + speed_boost + bonus"""
     return PRS
 
 def compute_FRS(p_0, traj=None, N=50):
@@ -142,17 +94,10 @@ def compute_FRS(p_0, traj=None, N=50):
     if traj is None:
         ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .178) * np.eye(2), np.zeros((2, 2)))))
     else:
-        """
-        PRS = []
-        trajectory = traj
-        for i in range(N):
-            center = np.zeros((4,1))
-            center[:2] = trajectory[0][:,i].reshape(2,1)
-            PRS.append(probZonotope(center, np.zeros((4,2)), np.array([[.028*np.exp(.05*(i+t)),-.096*np.exp(.017*(i+t)),0,0], \
-                                                                       [-.096*np.exp(.017*(i+t)),.066*np.exp(.042*(i+t)),0,0], \
-                                                                       [0,0,0,0],[0,0,0,0]])))"""
         FRS = FRS[:len(traj[0])] # Same thing was with PRS
-        ERS = probZonotope(np.zeros((4,1)), np.zeros((4,2)), np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
+        ERS = probZonotope(np.zeros((4,1)), \
+                           np.vstack((.178 * np.eye(2), np.zeros((2, 2)))), \
+                           np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
         
     # Add ERS
     for i, zono in enumerate(PRS):

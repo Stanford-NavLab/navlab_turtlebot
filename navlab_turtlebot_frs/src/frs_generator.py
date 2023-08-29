@@ -75,7 +75,7 @@ class frs_generator:
                 zonomsg = pZonotopeMsg()
                 zonomsg.dim = 2
                 zonomsg.num_gen = 2
-                zonomsg.generators = np.vstack((zono.c.T, zono.cov.T))
+                zonomsg.generators = np.vstack((zono.c.T, zono.G.T, zono.cov.T))
                 second.pzonotopes.append(zonomsg)
             representation.trajbased = second
             
@@ -90,7 +90,7 @@ class frs_generator:
             third = pZonotopeMsg()
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
-            third.generators = np.vstack((self.frss[i][2].c.T, self.frss[i][2].cov.T))
+            third.generators = np.vstack((self.frss[i][2].c.T, self.frss[i][2].G.T, self.frss[i][2].cov.T))
             representation.faultbased = third
             
             rows = [[self.t_sim] + list(third.generators.flatten())]
@@ -133,7 +133,7 @@ class frs_generator:
                 self.frss[i].append(compute_FRS(init_p, traj=self.trajs[i], N=1200))
 
                 # Generate the third FRS (fault)
-                self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))),np.zeros((4,2)), \
+                self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.eye(2)*.178,np.zeros((4,2)), \
                                                 np.vstack((np.eye(2), np.zeros((2,2))))))
     
     def run(self):
