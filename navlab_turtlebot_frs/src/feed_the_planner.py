@@ -91,7 +91,6 @@ class feed_the_planner:
         args is a tuple with one item, the integer number of the agent this plan is for
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
-        print(self.curr_locs)
         self.update(args)
         # Save calibration data if this is turtlebot2 and it's time to calibrate
         if args == 1 and rospy.get_param("/sim_or_cal")=="cal":
