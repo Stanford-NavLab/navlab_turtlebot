@@ -99,13 +99,14 @@ class feed_the_planner:
                 # delete the last, bad saved odometry
                 df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv')
                 df = df.drop(df.index[-1])
+                df = df.drop(df.index[-1])
                 df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False)
             self.saved_odom = np.hstack((self.saved_odom, self.curr_locs[args].reshape((2,1))))
             # Make sure rows are all the same size
             if self.saved_odom.shape[1] < 120/.1:
                 rows = [np.hstack((self.saved_odom[0],np.zeros((int(120/.1)-self.saved_odom.shape[1],)))), \
                         np.hstack((self.saved_odom[1],np.zeros((int(120/.1)-self.saved_odom.shape[1],))))]
-                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
+                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as csvfile:
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerows(rows)
     
