@@ -92,8 +92,9 @@ class feed_the_planner:
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
         self.update(args)
-        # Save calibration data if this is turtlebot2 and it's time to calibrate
-        if args == 1 and rospy.get_param("/sim_or_cal")=="cal":
+        # Save calibration data if this is turtlebot2
+        if args == 1:
+            print("maybe I'll do what I'm supposed to")
             # If this isn't the first odom for the simulation
             # Don't delete if you're not goint to write
             if (not self.saved_odom is None) and self.saved_odom.shape[1] < 120/.1:
@@ -104,7 +105,7 @@ class feed_the_planner:
                 df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:
-                self.saved_odom = self.curr_locs[args].reshape((2,1))
+                self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             # Make sure rows are all the same size
             if self.saved_odom.shape[1] < 120/.1:
                 rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
