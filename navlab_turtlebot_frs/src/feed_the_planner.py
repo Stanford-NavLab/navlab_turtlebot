@@ -70,7 +70,8 @@ class feed_the_planner:
     
     def run(self):
         while (not rospy.is_shutdown()):
-            rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
+            for i in range(self.n_bots):
+                rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
             self.publish()
             self.rate.sleep()
 
