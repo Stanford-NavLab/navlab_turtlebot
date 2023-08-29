@@ -52,8 +52,7 @@ for sim in range(n_sims):
     launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
     launch_nm.start()
 
-    for i in range(sim_len):
-        rospy.sleep(1)
+    rospy.sleep(sim_len)
         
     # Close everything
     launch_ion.shutdown()
