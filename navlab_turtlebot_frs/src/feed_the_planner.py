@@ -10,7 +10,7 @@ import csv
 from navlab_turtlebot_frs.msg import ZonotopeMsg, ZonotopeMsgArray, pZonotopeMsg, pZonotopeMsgArray, FRSArray
 from nav_msgs.msg import Path, Odometry
 from costmap_converter.msg import ObstacleArrayMsg, ObstacleMsg
-from geometry_msgs.msg import PoseStamped, Pose, Point, Polygon, Point32,, PoseWithCovariance
+from geometry_msgs.msg import PoseStamped, Pose, Point, Polygon, Point32, PoseWithCovariance
 
 # Import functions from other python files
 from reachability import compute_FRS
