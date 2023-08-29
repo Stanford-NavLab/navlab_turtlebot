@@ -47,9 +47,9 @@ class GoalPlanner():
                       []]
         
         for i in range(rospy.get_param("/n_bots")):
-            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/start_x"))
-            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/start_y"))
-            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/start_yaw"))
+            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"))
+            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/goal_y"))
+            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/goal_yaw"))
 
         # lock object for locking synchronizer variables
         # locked to prevent race conditions during parallelized
