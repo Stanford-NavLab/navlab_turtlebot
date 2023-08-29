@@ -130,8 +130,6 @@ class frs_generator:
         Second: an FRS made of p-zonotopes along the trajectory
         Third: an FRS made of p-zonotopes representing the fault case
         """
-        #for i in range(self.n_bots):
-        #    if i != int(self.name[-1]):
         # Get the initial position
         init_p = self.trajs[args][:,0]
 
@@ -148,15 +146,11 @@ class frs_generator:
             if len(traj[0]) < 120/.3:
                 rows = [np.hstack((traj[0],np.zeros((int(120/.3)-len(traj[0]),)))), \
                         np.hstack((traj[1],np.zeros((int(120/.3)-len(traj[0]),))))]
-                print("traj")
-                print(rows)
                 with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/caltraj.csv","a") as csvfile:
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerows(rows)
                 with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
                     f.write(rospy.get_param("/split"))
-                    print("split")
-                    print(rospy.get_param("/split"))
 
         # Generate the third FRS (fault)
         self.frss[args].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \

@@ -110,7 +110,6 @@ def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
             y = goal[1] - traj[1,-1]
             hyp = (x**2 + y**2)**.5
             scale = 2/hyp
-            print(traj[0,-1],goal[0])
             # Handle if the goal has already been reached
             if traj[0,-1]==goal[0]:
                 x_pts = np.ones((N-len(traj[0]),))*goal[0]
