@@ -27,9 +27,6 @@ class frs_generator:
         self.trajs = [[],[],[],[]]
         self.received = np.zeros((4,))
         self.goals = []
-        for i in range(self.n_bots):
-            self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
-                                        rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
         
         # ROS stuff
         rospy.init_node(self.name + 'frs_generator', anonymous=True)
@@ -111,6 +108,12 @@ class frs_generator:
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
+        # Just once get goals. Do this here so it happens after params are set but pretty much immediately
+        if args==0:
+            for i in range(self.n_bots):
+                self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
+                                            rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
+        
         print(self.received)
         self.received[args] = 1
         traj = np.zeros((2,len(plan.poses)))
