@@ -32,16 +32,16 @@ for sim in range(n_sims):
     
     with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
         for bot in range(n_bots):
-            f.write("turtlebot"+str(bot+1)+":")
+            f.write("turtlebot"+str(bot+1)+":\n")
             # in outer edge of 6x6 square with edge on y axis
             rndxy = np.random.rand(2,2)*6
             rndyaw = np.random.rand(2)*2*np.pi
-            f.write("  start_x: "+str(rndxy[0,0]))
-            f.write("  start_y: "+str(rndxy[0,1]))
-            f.write("  start_yaw: "+str(rndyaw[0]))
-            f.write("  goal_x: "+str(rndxy[0,0]))
-            f.write("  goal_y: "+str(rndxy[0,1]))
-            f.write("  goal_yaw: "+str(rndyaw[1]))
+            f.write("  start_x: "+str(rndxy[0,0])+"\n")
+            f.write("  start_y: "+str(rndxy[0,1])+"\n")
+            f.write("  start_yaw: "+str(rndyaw[0])+"\n")
+            f.write("  goal_x: "+str(rndxy[0,0])+"\n")
+            f.write("  goal_y: "+str(rndxy[0,1])+"\n")
+            f.write("  goal_yaw: "+str(rndyaw[1])+"\n")
     
     # Launch frs-related files
     launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
