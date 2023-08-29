@@ -111,6 +111,7 @@ class frs_generator:
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
+        print(self.received)
         self.received[args] = 1
         traj = np.zeros((2,len(plan.poses)))
         for t in range(len(plan.poses)):
@@ -138,9 +139,9 @@ class frs_generator:
         # Generate the second FRS (pzonos)
         self.frss[args].append(compute_FRS(init_p, traj=self.trajs[args], N=self.time, goal=self.goals[args], args=args))
         
-        # Save calibration data if this is turtlebot1 and it's time to calibrate
+        # Save calibration data if this is turtlebot2 and it's time to calibrate
         traj = self.trajs[args]
-        if args == 0 and rospy.get_param("/sim_or_cal")=="cal":
+        if args == 1 and rospy.get_param("/sim_or_cal")=="cal":
             # Make sure rows are all same size
             if len(traj[0]) < 120/.3:
                 rows = [np.hstack((traj[0],np.zeros((int(120/.3)-len(traj[0]),)))), \
@@ -163,7 +164,6 @@ class frs_generator:
             for i in range(self.n_bots):
                 # If we haven't received the trajectory yet
                 if self.received[i]==0 and i!=int(self.name[-1]):
-                    print("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan")
                     rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan", Path, self.traj_cb, (i))
             self.publish_frs()
             self.rate.sleep()

@@ -92,8 +92,8 @@ class feed_the_planner:
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
         self.update(args)
-        # Save calibration data if this is turtlebot1 and it's time to calibrate
-        if args == 0 and rospy.get_param("/sim_or_cal")=="cal":
+        # Save calibration data if this is turtlebot2 and it's time to calibrate
+        if args == 1 and rospy.get_param("/sim_or_cal")=="cal":
             # If this isn't the first odom for the simulation
             if self.saved_odom.shape[1] > 1:
                 # delete the last, bad saved odometry
