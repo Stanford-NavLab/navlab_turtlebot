@@ -30,17 +30,17 @@ launch.start()
 for sim in range(n_sims):
     rospy.loginfo("STARTING SIM #" + str(sim))
     
-    with open("current_goal.yaml","w") as f:
+    with open("/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
         for bot in range(n_bots):
             f.write("turtlebot"+str(bot+1)+":")
             # in outer edge of 6x6 square with edge on y axis
             rndxy = np.random.rand(2,2)*6
             rndyaw = np.random.rand(2)*2*np.pi
-            f.write("  start_x: "+rndvals[0,0])
-            f.write("  start_y: "+rndvals[0,1])
+            f.write("  start_x: "+rndxy[0,0])
+            f.write("  start_y: "+rndxy[0,1])
             f.write("  start_yaw: "+rndyaw[0])
-            f.write("  goal_x: "+rndvals[0,0])
-            f.write("  goal_y: "+rndvals[0,1])
+            f.write("  goal_x: "+rndxy[0,0])
+            f.write("  goal_y: "+rndxy[0,1])
             f.write("  goal_yaw: "+rndyaw[1])
     
     # Launch frs-related files
