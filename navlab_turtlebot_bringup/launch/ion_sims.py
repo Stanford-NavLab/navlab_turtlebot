@@ -40,8 +40,8 @@ for sim in range(n_sims):
             f.write("  start_x: "+str(rndxy[0,0])+"\n")
             f.write("  start_y: "+str(rndxy[0,1])+"\n")
             f.write("  start_yaw: "+str(rndyaw[0])+"\n")
-            f.write("  goal_x: "+str(rndxy[0,0])+"\n")
-            f.write("  goal_y: "+str(rndxy[0,1])+"\n")
+            f.write("  goal_x: "+str(rndxy[1,0])+"\n")
+            f.write("  goal_y: "+str(rndxy[1,1])+"\n")
             f.write("  goal_yaw: "+str(rndyaw[1])+"\n")
     
     # Launch frs-related files
