@@ -103,8 +103,8 @@ def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
         split=None
         if len(traj[0]) < N:
             split=len(traj[0])
-            # stuff for logging only on turtlebot1
-            if args==0:
+            # stuff for logging only on turtlebot2
+            if args==1:
                 rospy.set_param("split",split)
             x = goal[0] - traj[0,-1]
             y = goal[1] - traj[1,-1]
