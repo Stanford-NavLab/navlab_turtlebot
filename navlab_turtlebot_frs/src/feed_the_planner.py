@@ -102,7 +102,7 @@ class feed_the_planner:
                 df = df.drop(df.index[-1])
                 df = df.drop(df.index[-1])
                 df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
-                self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1))))
+                self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1))
             # Make sure rows are all the same size
