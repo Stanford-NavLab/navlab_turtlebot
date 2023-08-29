@@ -46,7 +46,7 @@ class feed_the_planner:
     def update(self):
         for i, item in enumerate(self.obs.obstacles):
             for bot in range(self.n_bots):
-                if self.vis_trck[i][bot+1] == 0 and self.check_range(item, bot+1):
+                if self.vis_trck[i][bot] == 0 and self.check_range(item, bot):
                     self.vis_obs[bot].obstacles.append(item)
                     
     def check_range(self, obstacle, bot):
