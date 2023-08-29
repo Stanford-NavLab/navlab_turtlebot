@@ -107,7 +107,8 @@ def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
             x = goal[0] - traj[0,-1]
             y = goal[1] - traj[1,-1]
             hyp = (x**2 + y**2)**.5
-            scale = 2/hyp
+            # Travel at max speed, each point spaced .3 seconds apart
+            scale = .22*.3/hyp
             # Handle if the goal has already been reached
             if traj[0,-1]==goal[0]:
                 x_pts = np.ones((N-len(traj[0]),))*goal[0]
