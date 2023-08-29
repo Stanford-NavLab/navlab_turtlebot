@@ -111,7 +111,7 @@ class frs_generator:
             traj[0][t] = global_plan.poses[t].pose.position.x
             traj[1][t] = global_plan.poses[t].pose.position.y
         self.trajs[args] = traj
-        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/plans.txt","a") as f:
+        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/plans.txt","w") as f:
             print("got here")
             f.write(str(traj.shape)+" "+str(global_plan.poses[-1].header))
         self.update()
