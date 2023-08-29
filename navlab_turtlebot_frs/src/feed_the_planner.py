@@ -79,6 +79,9 @@ class feed_the_planner:
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
         self.update(args)
     
+    def frs_cb(self, frs, args):
+        pass
+    
     def run(self):
         while (not rospy.is_shutdown()):
             for i in range(self.n_bots):
