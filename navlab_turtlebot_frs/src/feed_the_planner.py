@@ -22,6 +22,12 @@ class feed_the_planner:
     def __init__(self):
         # General stuff
         self.n_bots = rospy.get_param("/n_bots")
+        self.stay_away = []
+        for i in range(self.n_bots):
+            self.stay_away.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/start_x"), \
+                                            rospy.get_param("/turtlebot"+str(i+1)+"/start_y")]))
+            self.stay_away.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
+                                            rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
         self.n_obs = 3
         self.obs = ObstacleArrayMsg(header=Header(), obstacles=[])
         self.generate_obstacles()
@@ -30,12 +36,6 @@ class feed_the_planner:
         self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
-        self.stay_away = []
-        for i in range(self.n_bots):
-            self.stay_away.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/start_x"), \
-                                            rospy.get_param("/turtlebot"+str(i+1)+"/start_y")]))
-            self.stay_away.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
-                                            rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
         
         # ROS stuff
         rospy.init_node('feed_the_planner', anonymous=True)
