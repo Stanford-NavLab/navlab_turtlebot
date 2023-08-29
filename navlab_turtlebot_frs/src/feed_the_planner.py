@@ -58,7 +58,6 @@ class feed_the_planner:
         """
         for i in range(self.n_bots):
             publishable = ObstacleArrayMsg()
-            self.update()
             self.pubs[i].publish(self.vis_obs)
     
     def odom_cb(self, odom, args):
@@ -67,6 +66,7 @@ class feed_the_planner:
         args is a tuple with one item, the integer number of the agent this plan is for
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
+        self.update()
     
     def run(self):
         while (not rospy.is_shutdown()):
