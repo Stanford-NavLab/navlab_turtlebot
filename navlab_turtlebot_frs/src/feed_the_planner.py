@@ -39,17 +39,27 @@ class feed_the_planner:
         self.rate = rospy.Rate(10)
      
     def generate_obstacles(self):
+        """
+        Make some random obstacles.
+        """
         for i in range(self.n_obs):
-            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1)]),radius=1)
+            # Random locations are in 10x10 square centered on origin
+            loc = np.random.rand(2)*np.array([10, 10]) - np.array([5, 5])
+            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=loc[0],y=loc[1])]),radius=1)
             self.obs.obstacles.append(obstacle)
     
-    def update(self):
+    def update(self,bot):
+        """
+        Update the list of obstacles that each bot can see.
+        """
         for i, item in enumerate(self.obs.obstacles):
-            for bot in range(self.n_bots):
-                if self.vis_trck[i][bot] == 0 and self.check_range(item, bot):
-                    self.vis_obs[bot].obstacles.append(item)
+            if self.vis_trck[i][bot] == 0 and self.check_range(item, bot):
+                self.vis_obs[bot].obstacles.append(item)
                     
     def check_range(self, obstacle, bot):
+        """
+        Check if the bot is close enough to the obstacle to see it.
+        """
         obs_loc = np.array([obstacle.polygon.points[0].x, obstacle.polygon.points[0].y])
         bot_loc = self.curr_locs[bot]
         return np.sum((obs_loc - bot_loc)**2)**.5 <= self.vis_rad
@@ -67,12 +77,13 @@ class feed_the_planner:
         args is a tuple with one item, the integer number of the agent this plan is for
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
-        self.update()
+        self.update(args)
     
     def run(self):
         while (not rospy.is_shutdown()):
             for i in range(self.n_bots):
                 rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
+                rospy.Subscriber("/turtlebot1/" + str(i+1) + '/frs', FRSArray, self.frs_cb, (i))
             self.publish()
             self.rate.sleep()
 
