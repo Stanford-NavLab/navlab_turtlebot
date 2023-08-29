@@ -105,8 +105,10 @@ def compute_FRS(p_0, traj=None, N=50, goal=None):
             y = goal[1] - traj[1,-1]
             hyp = (x**2 + y**2)**.5
             scale = 2/hyp
-            extension = np.hstack((np.linspace(traj[0,-1], goal[0], retstep=x*scale), np.linspace(traj[1,-1], goal[1], retstep=y*scale)))
-            extension = extension.T[:,:N-len(traj[0])]
+            x_pts =np.linspace(traj[0,-1], goal[0], retstep=x*scale)
+            y_pts = np.linspace(traj[1,-1], goal[1], retstep=y*scale)
+            extension = np.hstack((x_pts.reshape((2,len(x_pts))), y_pts.reshape((2,len(y_pts)))))
+            extension = extension[:,:N-len(traj[0])]
             traj = np.hstack((traj,extension))
             FRS = FRS[:len(traj[0])]
     
