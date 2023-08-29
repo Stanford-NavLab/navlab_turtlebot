@@ -9,7 +9,7 @@ from probzonotope import probZonotope
 from utils import remove_zero_columns
 
 
-def compute_PRS(p_0, traj=None, N=50):
+def compute_PRS(p_0, traj=None, N=50, split=None):
     """Compute Planning Reachable Set (PRS)
     
     PRS desribes the reachable positions of planned trajectories over a 
@@ -60,12 +60,12 @@ def compute_PRS(p_0, traj=None, N=50):
     if traj is None:
         tf = N
     else:
-        # If the trajectory is shorter than the provided N, then cut off the PRS early
-        PRS = PRS[:len(traj[0])]
-        tf = min(N,len(traj[0]))
+        tf = len(traj[0])
+        PRS = PRS[:tf]
     
     for t in range(tf):
-        t_sim = t * .1
+        # The default is .3 for teb local planner, and I'm not about to figure out how to change that
+        t_sim = t * .3
         # Ignoring acceleration and orientation, just gliding at top speed
         if traj is None:
             pos = t_sim * V_pk
@@ -74,12 +74,17 @@ def compute_PRS(p_0, traj=None, N=50):
             center = np.zeros((4,1))
             center[:2] = traj[:,t].reshape(2,1)
             # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
-            PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
-                                                                     [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
-                                                                     [0,0,0,0],[0,0,0,0]]))
+            if t <= split:
+                PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+                                                                         [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+                                                                         [0,0,0,0],[0,0,0,0]]))
+            else:
+                PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+                                                                         [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
+                                                                         [0,0,0,0],[0,0,0,0]]))
     return PRS
 
-def compute_FRS(p_0, traj=None, N=50):
+def compute_FRS(p_0, traj=None, N=50, goal=None):
     """Compute FRS
     
     FRS = PRS + ERS
@@ -88,13 +93,27 @@ def compute_FRS(p_0, traj=None, N=50):
     
     """
     FRS = N * [None]
-    PRS = compute_PRS(p_0, traj=traj, N=N)
+    
+    # If the trajectory is shorter than the provided N, then connect end of trajectory to goal with straight line
+    if not traj is None:
+        split=None
+        if len(traj[0]) < N:
+            split=len(traj[0])
+            x = goal[0] - traj[0,-1]
+            y = goal[1] - traj[1,-1]
+            hyp = (x**2 + y**2)**.5
+            scale = 2/hyp
+            extension = np.vstack((np.linspace(traj[0,-1], goal[0], retstep=x*scale), np.linspace(traj[1,-1], goal[1], retstep=y*scale)))
+            extension = extension[:,N-len(traj[0])]
+            traj = np.hstack((traj,extension))
+            FRS = FRS[:len(traj[0])]
+    
+    PRS = compute_PRS(p_0, traj=traj, N=N, split=None)
     
     # If we are computing just a normal total FRS
     if traj is None:
         ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .178/2) * np.eye(2), np.zeros((2, 2)))))
     else:
-        FRS = FRS[:len(traj[0])] # Same thing was with PRS
         ERS = probZonotope(np.zeros((4,1)), \
                            np.vstack((.178/2 * np.eye(2), np.zeros((2, 2)))), \
                            np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))

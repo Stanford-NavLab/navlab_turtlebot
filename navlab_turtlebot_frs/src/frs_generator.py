@@ -21,10 +21,15 @@ class frs_generator:
         # General stuff
         self.name = name
         self.n_bots = rospy.get_param("/n_bots")
+        self.time = int(120/.3)
         # I make four lists even though there may be fewer bots, other lists might just stay empty
         self.frss = [[],[],[],[]]
         self.trajs = [[],[],[],[]]
         self.received = np.zeros((4,))
+        self.goals = []
+        for i in range(self.n_bots):
+            self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
+                                        rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
         
         # ROS stuff
         rospy.init_node(self.name + 'frs_generator', anonymous=True)
@@ -101,19 +106,19 @@ class frs_generator:
             # Publish
             self.frs_pubs[i].publish(representation)
     
-    def traj_cb(self, global_plan, args):
+    def traj_cb(self, plan, args):
         """
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
         args is a tuple with one item, the integer number of the agent this plan is for
         """
-        traj = np.zeros((2,len(global_plan.poses)))
-        for t in range(len(global_plan.poses)):
-            traj[0][t] = global_plan.poses[t].pose.position.x
-            traj[1][t] = global_plan.poses[t].pose.position.y
+        traj = np.zeros((2,len(plan.poses)))
+        for t in range(len(plan.poses)):
+            traj[0][t] = plan.poses[t].pose.position.x
+            traj[1][t] = plan.poses[t].pose.position.y
         self.trajs[args] = traj
         with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/plans.txt","a") as f:
             print("got here")
-            f.write(str(traj.shape)+" "+str(global_plan.poses[-1].header))
+            f.write(str(traj.shape)+" "+str(plan.poses[-1].header))
         self.update()
         self.received[args] = 1
         
@@ -130,10 +135,10 @@ class frs_generator:
                 init_p = self.trajs[i][:,0]
 
                 # Generate the first FRS (normal)
-                self.frss[i].append(compute_FRS(init_p, N=1200))
+                self.frss[i].append(compute_FRS(init_p, N=self.time))
 
                 # Generate the second FRS (pzonos)
-                self.frss[i].append(compute_FRS(init_p, traj=self.trajs[i], N=1200))
+                self.frss[i].append(compute_FRS(init_p, traj=self.trajs[i], N=self.time, goal=self.goals[i]))
 
                 # Generate the third FRS (fault)
                 self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \
@@ -149,8 +154,8 @@ class frs_generator:
             for i in range(self.n_bots):
                 # If we haven't received the trajectory yet
                 if self.received[i]==0 and i!=int(self.name[-1]):
-                    print("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/global_plan")
-                    rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/global_plan", Path, self.traj_cb, (i))
+                    print("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan")
+                    rospy.Subscriber("/turtlebot" + str(i+1) + "/move_base/TebLocalPlannerROS/local_plan", Path, self.traj_cb, (i))
             self.publish_frs()
             self.rate.sleep()
 
