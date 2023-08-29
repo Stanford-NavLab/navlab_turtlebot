@@ -110,6 +110,8 @@ class feed_the_planner:
             if self.saved_odom.shape[1] < 120/.1:
                 rows = [np.hstack((self.saved_odom[0],np.zeros((int(120/.1)-self.saved_odom.shape[1],)))), \
                         np.hstack((self.saved_odom[1],np.zeros((int(120/.1)-self.saved_odom.shape[1],))))]
+                print("odom")
+                print(rows)
                 with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as csvfile:
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerows(rows)
