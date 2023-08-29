@@ -94,13 +94,13 @@ class feed_the_planner:
         self.update(args)
         # Save calibration data if this is turtlebot1 and it's time to calibrate
         if args == 0 and rospy.get_param("/sim_or_cal")=="cal":
-            self.saved_odom = np.hstack((self.saved_odom, self.curr_locs[args].reshape((2,1))))
             # If this isn't the first odom for the simulation
             if self.saved_odom.shape[1] > 1:
                 # delete the last, bad saved odometry
                 df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv')
                 df = df.drop(df.index[-1])
                 df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False)
+            self.saved_odom = np.hstack((self.saved_odom, self.curr_locs[args].reshape((2,1))))
             # Make sure rows are all the same size
             if self.saved_odom.shape[1] < 120/.1:
                 rows = [np.hstack((self.saved_odom[0],np.zeros((int(120/.1)-self.saved_odom.shape[1],)))), \
