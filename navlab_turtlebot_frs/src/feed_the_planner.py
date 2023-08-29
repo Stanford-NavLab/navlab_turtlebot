@@ -38,7 +38,7 @@ class feed_the_planner:
      
     def generate_obstacles(self):
         for i in range(self.n_obs):
-            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1)],radius=1))
+            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1)]),radius=1)
             self.obs.obstacles.append(obstacle)
     
     def update(self):
