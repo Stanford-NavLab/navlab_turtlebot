@@ -8,6 +8,8 @@ from zonotope import Zonotope
 from probzonotope import probZonotope
 from utils import remove_zero_columns
 
+import rospy
+
 
 def compute_PRS(p_0, traj=None, N=50, split=None):
     """Compute Planning Reachable Set (PRS)
@@ -86,7 +88,7 @@ def compute_PRS(p_0, traj=None, N=50, split=None):
                                                                          [0,0,0,0],[0,0,0,0]]))
     return PRS
 
-def compute_FRS(p_0, traj=None, N=50, goal=None):
+def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
     """Compute FRS
     
     FRS = PRS + ERS
@@ -101,6 +103,9 @@ def compute_FRS(p_0, traj=None, N=50, goal=None):
         split=None
         if len(traj[0]) < N:
             split=len(traj[0])
+            # stuff for logging only on turtlebot1
+            if args==0:
+                rospy.set_param("split",split)
             x = goal[0] - traj[0,-1]
             y = goal[1] - traj[1,-1]
             hyp = (x**2 + y**2)**.5

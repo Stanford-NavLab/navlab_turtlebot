@@ -3,6 +3,7 @@
 # Import libraries
 import rospy
 import numpy as np
+import pandas as pd
 import argparse
 import csv
 
@@ -32,6 +33,8 @@ class feed_the_planner:
         self.obs = ObstacleArrayMsg(header=Header(), obstacles=[])
         self.generate_obstacles()
         self.curr_locs = [None,None,None,None]
+        if rospy.get_param("/sim_or_cal")=='cal':
+            self.saved_odom = np.zeros((2,1))
         self.vis_trck = np.zeros((self.n_obs,self.n_bots))
         self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
@@ -89,6 +92,22 @@ class feed_the_planner:
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
         self.update(args)
+        # Save calibration data if this is turtlebot1 and it's time to calibrate
+        if args == 0 and rospy.get_param("/sim_or_cal")=="cal":
+            self.saved_odom = np.hstack((self.saved_odom, self.curr_locs[args].reshape((2,1))))
+            # If this isn't the first odom for the simulation
+            if self.saved_odom.shape[1] > 1:
+                # delete the last, bad saved odometry
+                df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv')
+                df = df.drop(df.index[-1])
+                df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False)
+            # Make sure rows are all the same size
+            if self.saved_odom.shape[1] < 120/.1:
+                rows = [np.hstack((self.saved_odom[0],np.zeros((int(120/.1)-self.saved_odom.shape[1],)))), \
+                        np.hstack((self.saved_odom[1],np.zeros((int(120/.1)-self.saved_odom.shape[1],))))]
+                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
+                    csvwriter = csv.writer(csvfile)
+                    csvwriter.writerows(rows)
     
     def frs_cb(self, frs, args):
         pass

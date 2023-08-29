@@ -117,9 +117,6 @@ class frs_generator:
             traj[0][t] = plan.poses[t].pose.position.x
             traj[1][t] = plan.poses[t].pose.position.y
         self.trajs[args] = traj
-        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/plans.txt","a") as f:
-            print("got here",args)
-            f.write(str(traj.shape)+" "+str(plan.poses[-1].header))
         self.update(args)
         
     def update(self, args):
@@ -139,7 +136,20 @@ class frs_generator:
         self.frss[args].append(compute_FRS(init_p, N=self.time))
 
         # Generate the second FRS (pzonos)
-        self.frss[args].append(compute_FRS(init_p, traj=self.trajs[args], N=self.time, goal=self.goals[args]))
+        self.frss[args].append(compute_FRS(init_p, traj=self.trajs[args], N=self.time, goal=self.goals[args], args=args))
+        
+        # Save calibration data if this is turtlebot1 and it's time to calibrate
+        traj = self.trajs[args]
+        if args == 0 and rospy.get_param("/sim_or_cal")=="cal":
+            # Make sure rows are all same size
+            if len(traj[0]) < 120/.3:
+                rows = [np.hstack((traj[0],np.zeros((int(120/.3)-len(traj[0]),)))), \
+                        np.hstack((traj[1],np.zeros((int(120/.3)-len(traj[0]),))))]
+                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/caltraj.csv","a") as csvfile:
+                    csvwriter = csv.writer(csvfile)
+                    csvwriter.writerows(rows)
+                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
+                    f.write(rospy.get_param("/split"))
 
         # Generate the third FRS (fault)
         self.frss[args].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \

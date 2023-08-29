@@ -3,10 +3,11 @@ import rospy
 import numpy as np
 
 # Arguments/Parameters
-n_bots = 2
+n_bots = 3
 rospy.set_param('n_bots', n_bots)
 n_sims = 1
-sim_len = 60
+sim_len = 120
+rospy.set_param('sim_or_cal','cal')
 
 # Initialize things for launching launch file
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
