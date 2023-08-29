@@ -41,10 +41,15 @@ class GoalPlanner():
         self.goal_publishers = {}
 
         # goal in [x,y,yaw]
-        self.goals = [[ 2., 2.,0.],
-                      [ 2.,-2.,3*np.pi/2.],
-                      [-2.,-2.,np.pi],
-                      [-2., 2.,np.pi/2.]]
+        self.goals = [[],
+                      [],
+                      [],
+                      []]
+        
+        for i in range(rospy.get_param("/n_bots")):
+            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/start_x"))
+            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/start_y"))
+            self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/start_yaw"))
 
         # lock object for locking synchronizer variables
         # locked to prevent race conditions during parallelized
@@ -125,9 +130,9 @@ class GoalPlanner():
 
             self.goal_distances[turtlebot_id] = goal_distance
             distances = np.array(list(self.goal_distances.values()))
-            if np.all(distances < self.goal_threshold):
-                self.current_goal_idx = {k:(g+1)%len(self.goals) for k,g in self.current_goal_idx.items()}
-                self.publish_goals()
+            #if np.all(distances < self.goal_threshold):
+            #    self.current_goal_idx = {k:(g+1)%len(self.goals) for k,g in self.current_goal_idx.items()}
+            #    self.publish_goals()
 
     def publish_goals(self):
         """Publish new goal locations.
