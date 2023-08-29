@@ -27,26 +27,19 @@ launch.start()
 
 # Simulation loop
 for sim in range(n_sims):
-    launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
-    launch_nm.start()
-    rospy.loginfo("started")
+    rospy.loginfo("STARTING SIM #" + str(sim))
     
+    # Launch frs-related files
     launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
     launch_ion.start()
-    rospy.loginfo("hopefully finally")
     
-    '''nodes = []
-    processes = []
-    for i in range(n_bots):
-        nodes.append(roslaunch.core.Node("navlab_turtlebot_frs", "frs_generator.py", args="-h -n turtlebot"+str(i)))
-        processes.append(launch.launch(nodes[i]))
-        print(processes[-1].is_alive())'''
-        
-    #node = roslaunch.core.Node("navlab_turtlebot_obstacles", "ground_truth.py")
-    #process = launch.launch(node)
-    #print(process.is_alive())
+    # Launch simulator
+    launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
+    launch_nm.start()
+
     for i in range(sim_len):
-        print(i)
         rospy.sleep(1)
-    #process.stop()
+        
+    # Close everything
+    launch_ion.shutdown()
     launch_nm.shutdown()
