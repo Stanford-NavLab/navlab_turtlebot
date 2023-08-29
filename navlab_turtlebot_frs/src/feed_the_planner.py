@@ -9,7 +9,7 @@ import csv
 # Import message files
 from navlab_turtlebot_frs.msg import ZonotopeMsg, ZonotopeMsgArray, pZonotopeMsg, pZonotopeMsgArray, FRSArray
 from nav_msgs.msg import Path
-from costmap_coverter.msg import ObstacleArrayMsg, ObstacleMsg
+from costmap_converter.msg import ObstacleArrayMsg, ObstacleMsg
 from geometry_msgs.msg import PoseStamped, Pose, Point, Polygon, Point32
 
 # Import functions from other python files
