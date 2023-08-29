@@ -64,5 +64,5 @@ class feed_the_planner:
             self.rate.sleep()
 
 if __name__ == '__main__':
-    feeder = feed_the_planner(args.name)
+    feeder = feed_the_planner()
     feeder.run()
