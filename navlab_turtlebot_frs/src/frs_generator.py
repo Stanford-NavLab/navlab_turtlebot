@@ -133,8 +133,9 @@ class frs_generator:
                 self.frss[i].append(compute_FRS(init_p, traj=self.trajs[i], N=1200))
 
                 # Generate the third FRS (fault)
-                self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.eye(2)*.178,np.zeros((4,2)), \
-                                                np.vstack((np.eye(2), np.zeros((2,2))))))
+                self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((4,2)))), \
+                                                 np.vstack((np.eye(2)*.178, np.zeros((2,2)))), \
+                                                 np.vstack((np.eye(2), np.zeros((2,2))))))
     
     def run(self):
         while (not rospy.is_shutdown()):
