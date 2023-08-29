@@ -3,9 +3,9 @@ import rospy
 import numpy as np
 
 # Arguments/Parameters
-n_bots = 3
+n_bots = 1
 rospy.set_param('n_bots', n_bots)
-n_sims = 1
+n_sims = 3
 sim_len = 120
 rospy.set_param('sim_or_cal','cal')
 
