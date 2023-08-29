@@ -5,7 +5,7 @@ import rospy
 n_bots = 2
 rospy.set_param('n_bots', n_bots)
 n_sims = 1
-sim_len = 30
+sim_len = 60
 
 # Initialize things for launching launch file
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)

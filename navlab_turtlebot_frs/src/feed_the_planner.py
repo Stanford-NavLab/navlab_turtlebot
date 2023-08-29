@@ -36,6 +36,8 @@ class feed_the_planner:
         self.obs.obstacles.append(obs1)
         obs2 = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=-1),Point32(x=1,y=-5)]))
         self.obs.obstacles.append(obs2)
+        obs3 = ObstacleMsg(polygon=Polygon(points=[Point32(x=4.5,y=.5),Point32(x=4.5,y=-.5),Point32(x=5.5,y=-.5),Point32(x=5.5,y=.5)]))
+        self.obs.obstacles.append(obs3)
     
     def publish(self):
         """
