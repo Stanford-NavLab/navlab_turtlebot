@@ -95,7 +95,7 @@ class feed_the_planner:
         # Save calibration data if this is turtlebot2 and it's time to calibrate
         if args == 1 and rospy.get_param("/sim_or_cal")=="cal":
             # If this isn't the first odom for the simulation
-            if not self.saved_odom.shape[1] is None:
+            if not self.saved_odom is None:
                 # delete the last, bad saved odometry
                 df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv')
                 print(df)
