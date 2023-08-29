@@ -36,12 +36,12 @@ for sim in range(n_sims):
             # in outer edge of 6x6 square with edge on y axis
             rndxy = np.random.rand(2,2)*6
             rndyaw = np.random.rand(2)*2*np.pi
-            f.write("  start_x: "+rndxy[0,0])
-            f.write("  start_y: "+rndxy[0,1])
-            f.write("  start_yaw: "+rndyaw[0])
-            f.write("  goal_x: "+rndxy[0,0])
-            f.write("  goal_y: "+rndxy[0,1])
-            f.write("  goal_yaw: "+rndyaw[1])
+            f.write("  start_x: "+str(rndxy[0,0]))
+            f.write("  start_y: "+str(rndxy[0,1]))
+            f.write("  start_yaw: "+str(rndyaw[0]))
+            f.write("  goal_x: "+str(rndxy[0,0]))
+            f.write("  goal_y: "+str(rndxy[0,1]))
+            f.write("  goal_yaw: "+str(rndyaw[1]))
     
     # Launch frs-related files
     launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
