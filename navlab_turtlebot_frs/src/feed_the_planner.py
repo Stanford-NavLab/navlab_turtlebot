@@ -98,7 +98,7 @@ class feed_the_planner:
             # Don't delete if you're not goint to write
             if (not self.saved_odom is None) and self.saved_odom.shape[1] < 120/.1:
                 # delete the last, bad saved odometry
-                df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv')
+                df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
                 print("df bullshit")
                 print(df)
                 df = df.drop(df.index[-1])
