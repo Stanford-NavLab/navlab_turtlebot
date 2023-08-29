@@ -120,7 +120,7 @@ def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
                 y_pts = np.ones((N-len(traj[0]),))*goal[1]
             else:
                 y_pts = np.arange(traj[1,-1], goal[1], y*scale)
-            extension = np.hstack((x_pts.reshape((1,len(x_pts))), y_pts.reshape((1,len(y_pts)))))
+            extension = np.vstack((x_pts.reshape((1,len(x_pts))), y_pts.reshape((1,len(y_pts)))))
             extension = extension[:,:N-len(traj[0])]
             traj = np.hstack((traj,extension))
             FRS = FRS[:len(traj[0])]
