@@ -148,8 +148,6 @@ class frs_generator:
     def run(self):
         while (not rospy.is_shutdown()):
             self.t_sim = rospy.get_time() - self.start
-            # If we haven't received the trajectories yet
-            if np.sum(self.received)!=self.n_bots:
             # Subscribe to the global plans for every other agent
             for i in range(self.n_bots):
                 # If we haven't received the trajectory yet
