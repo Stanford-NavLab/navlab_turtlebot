@@ -109,7 +109,7 @@ class frs_generator:
         args is a tuple with one item, the integer number of the agent this plan is for
         """
         # Just once get goals. Do this here so it happens after params are set but pretty much immediately
-        if args==0:
+        if args==1:
             for i in range(self.n_bots):
                 self.goals.append(np.array([rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"),\
                                             rospy.get_param("/turtlebot"+str(i+1)+"/goal_y")]))
