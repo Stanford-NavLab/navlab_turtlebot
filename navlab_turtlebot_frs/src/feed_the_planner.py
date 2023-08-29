@@ -11,6 +11,7 @@ from navlab_turtlebot_frs.msg import ZonotopeMsg, ZonotopeMsgArray, pZonotopeMsg
 from nav_msgs.msg import Path, Odometry
 from costmap_converter.msg import ObstacleArrayMsg, ObstacleMsg
 from geometry_msgs.msg import PoseStamped, Pose, Point, Polygon, Point32, PoseWithCovariance
+from std_msgs.msg import Header
 
 # Import functions from other python files
 from reachability import compute_FRS
@@ -22,11 +23,12 @@ class feed_the_planner:
         # General stuff
         self.n_bots = rospy.get_param("/n_bots")
         self.n_obs = 3
-        self.obs = ObstacleArrayMsg()
+        self.obs = ObstacleArrayMsg(header=Header())
         self.generate_obstacles()
         self.curr_locs = [None,None,None,None]
         self.vis_trck = np.zeros((self.n_obs,self.n_bots))
-        self.vis_obs = [ObstacleArrayMsg(),ObstacleArrayMsg(),ObstacleArrayMsg(),ObstacleArrayMsg()]
+        self.vis_obs = [ObstacleArrayMsg(header=Header()), ObstacleArrayMsg(header=Header()), \
+                        ObstacleArrayMsg(header=Header()), ObstacleArrayMsg(header=Header())]
         self.vis_rad = 2 # m
         
         # ROS stuff
@@ -38,7 +40,7 @@ class feed_the_planner:
      
     def generate_obstacles(self):
         for i in range(self.n_obs):
-            obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=1,y=1)]),radius=1)
+            obstacle = ObstacleMsg(header=Header(),polygon=Polygon(points=[Point32(x=1,y=1)]),radius=1)
             self.obs.obstacles.append(obstacle)
     
     def update(self):
@@ -57,7 +59,7 @@ class feed_the_planner:
         Publish the obstacles to different topics.
         """
         for i in range(self.n_bots):
-            publishable = ObstacleArrayMsg()
+            publishable = ObstacleArrayMsg(header=Header())
             self.pubs[i].publish(self.vis_obs)
     
     def odom_cb(self, odom, args):
