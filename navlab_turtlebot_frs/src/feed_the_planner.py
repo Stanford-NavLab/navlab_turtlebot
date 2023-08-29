@@ -43,8 +43,8 @@ class feed_the_planner:
         Make some random obstacles.
         """
         for i in range(self.n_obs):
-            # Random locations are in 10x10 square centered on origin
-            loc = np.random.rand(2)*np.array([10, 10]) - np.array([5, 5])
+            # Random locations are in 5x5 square off-center from origin
+            loc = np.random.rand(2)*np.array([-5, 5]) - np.array([0, 2.5])
             obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=loc[0],y=loc[1])]),radius=1)
             self.obs.obstacles.append(obstacle)
     

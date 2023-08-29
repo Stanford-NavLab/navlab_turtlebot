@@ -11,7 +11,7 @@
   # whether or not to open rviz
   <arg name="open_rviz" default="true"/>
   # parameters for start and goal locations
-  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/four_square.yaml"/>
+  <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/current_goal.yaml"/>
   # type of planner to start, defaults to no planner
   <arg name="planner" default=""/>
   # VRPN server, defaults to Stanford Flight Room
