@@ -120,30 +120,31 @@ class frs_generator:
         with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/plans.txt","a") as f:
             print("got here",args)
             f.write(str(traj.shape)+" "+str(plan.poses[-1].header))
-        self.update()
+        self.update(args)
         
-    def update(self):
+    def update(self, args):
         """
+        Update the agent you just got the plan for.
         Three FRSs are generated for each agent.
         First: a standard FRS made of zonotopes
         Second: an FRS made of p-zonotopes along the trajectory
         Third: an FRS made of p-zonotopes representing the fault case
         """
-        for i in range(self.n_bots):
-            if i != int(self.name[-1]):
-                # Get the initial position
-                init_p = self.trajs[i][:,0]
+        #for i in range(self.n_bots):
+        #    if i != int(self.name[-1]):
+        # Get the initial position
+        init_p = self.trajs[args][:,0]
 
-                # Generate the first FRS (normal)
-                self.frss[i].append(compute_FRS(init_p, N=self.time))
+        # Generate the first FRS (normal)
+        self.frss[args].append(compute_FRS(init_p, N=self.time))
 
-                # Generate the second FRS (pzonos)
-                self.frss[i].append(compute_FRS(init_p, traj=self.trajs[i], N=self.time, goal=self.goals[i]))
+        # Generate the second FRS (pzonos)
+        self.frss[args].append(compute_FRS(init_p, traj=self.trajs[args], N=self.time, goal=self.goals[args]))
 
-                # Generate the third FRS (fault)
-                self.frss[i].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \
-                                                 np.vstack((np.eye(2)*.178/2, np.zeros((2,2)))), \
-                                                 np.vstack((np.eye(2), np.zeros((2,2))))))
+        # Generate the third FRS (fault)
+        self.frss[args].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \
+                                         np.vstack((np.eye(2)*.178/2, np.zeros((2,2)))), \
+                                         np.vstack((np.eye(2), np.zeros((2,2))))))
     
     def run(self):
         while (not rospy.is_shutdown()):
