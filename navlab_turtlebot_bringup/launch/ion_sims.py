@@ -14,7 +14,7 @@ roslaunch.configure_logging(uuid)
 cli_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/navigate_multi.launch', \
             'robot_count:=2', \
             'planner:=goal', \
-            'goal_file:=/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_frs/param/current_goal.yaml']
+            'goal_file:=/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml']
 roslaunch_args = cli_args[1:]
 nm_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
 ion_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/ion-stuff.launch', \
@@ -30,7 +30,7 @@ launch.start()
 for sim in range(n_sims):
     rospy.loginfo("STARTING SIM #" + str(sim))
     
-    with open("/home/izzie/catkin_ws/src/navlab_turtlebot_base/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
+    with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
         for bot in range(n_bots):
             f.write("turtlebot"+str(bot+1)+":")
             # in outer edge of 6x6 square with edge on y axis
