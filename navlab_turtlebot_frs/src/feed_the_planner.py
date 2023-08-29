@@ -23,12 +23,12 @@ class feed_the_planner:
         # General stuff
         self.n_bots = rospy.get_param("/n_bots")
         self.n_obs = 3
-        self.obs = ObstacleArrayMsg(header=Header())
+        self.obs = ObstacleArrayMsg(header=Header(), obstacles=[])
         self.generate_obstacles()
         self.curr_locs = [None,None,None,None]
         self.vis_trck = np.zeros((self.n_obs,self.n_bots))
-        self.vis_obs = [ObstacleArrayMsg(header=Header()), ObstacleArrayMsg(header=Header()), \
-                        ObstacleArrayMsg(header=Header()), ObstacleArrayMsg(header=Header())]
+        self.vis_obs = [ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[]), \
+                        ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
         
         # ROS stuff
@@ -59,7 +59,6 @@ class feed_the_planner:
         Publish the obstacles to different topics.
         """
         for i in range(self.n_bots):
-            publishable = ObstacleArrayMsg(header=Header())
             self.pubs[i].publish(self.vis_obs)
     
     def odom_cb(self, odom, args):
