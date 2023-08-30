@@ -91,6 +91,7 @@ class feed_the_planner:
         args is a tuple with one item, the integer number of the agent this plan is for
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
+        print(self.curr_locs[args])
         self.update(args)
         # Save calibration data if this is turtlebot2
         if args == 1:
