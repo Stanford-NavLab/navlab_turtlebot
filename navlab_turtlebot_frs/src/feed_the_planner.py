@@ -116,8 +116,8 @@ class feed_the_planner:
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
-                    df.loc[2] = new_data[0].tolist()
-                    df.loc[3] = new_data[1].tolist()
+                    df.loc[len(df.index)] = new_data[0].tolist()
+                    df.loc[len(df.index)] = new_data[1].tolist()
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', index=False, header=False)
                 else:
                     rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
