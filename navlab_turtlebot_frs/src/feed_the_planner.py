@@ -100,39 +100,28 @@ class feed_the_planner:
         self.update(args)
         # Save calibration data if this is turtlebot2
         if args == 1:
-            print(odom.pose.pose.position.x)
+            print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             if not self.saved_odom is None:
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
                 if len(self.saved_odom[0]) != 1:
-                    print("dataframes")
-                    print("np")
-                    df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
-                    print(df)
-                    print("pandas")
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
-                    print(df)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     df.loc[2] = new_data[0].tolist()
                     df.loc[3] = new_data[1].tolist()
-                    print("after drop")
-                    print(df)
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=False)
                 else:
-                    df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
-                    print(df)
-                    print("csvwriters")
                     rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
                     df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
-                    print(df)
-                    print("\n\n\n")
+                    #print(df)
+                    #print("\n\n\n")
     
     def frs_cb(self, frs, args):
         pass

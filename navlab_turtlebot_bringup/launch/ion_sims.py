@@ -6,8 +6,8 @@ import csv
 # Arguments/Parameters
 n_bots = 2
 rospy.set_param('n_bots', n_bots)
-n_sims = 2
-sim_len = 30
+n_sims = 1
+sim_len = 60
 rospy.set_param('sim_or_cal','cal')
 
 # Initialize things for launching launch file
