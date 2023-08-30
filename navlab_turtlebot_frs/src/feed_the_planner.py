@@ -72,11 +72,11 @@ class feed_the_planner:
         print("obstacles")
         print("rows")
         print("\n\n\n")
-        print(np.load_txt("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv", delimiter=","))
+        print(np.loadtxt("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv", delimiter=","))
         with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerows(rows)
-        print(np.load_txt("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv", delimiter=","))
+        print(np.loadtxt("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv", delimiter=","))
         print("finished")
     
     def update(self,bot):
