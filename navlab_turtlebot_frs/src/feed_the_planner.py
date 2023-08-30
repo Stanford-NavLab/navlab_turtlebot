@@ -46,6 +46,7 @@ class feed_the_planner:
         for i in range(self.n_bots):
             self.pubs.append(rospy.Publisher("/turtlebot"+ str(i+1) + "/move_base/TebLocalPlannerROS/obstacles", ObstacleArrayMsg, queue_size=10))
         self.rate = rospy.Rate(10)
+        self.last = rospy.get_time()
      
     def generate_obstacles(self):
         """
@@ -98,8 +99,9 @@ class feed_the_planner:
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
         self.update(args)
-        # Save calibration data if this is turtlebot2
-        if args == 1:
+        # Save calibration data if this is turtlebot2 and it has been .1 seconds
+        if args == 1 and rospy.get_time()-self.last>=.1:
+            self.last = rospy.get_time()
             print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             if not self.saved_odom is None:
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
@@ -119,9 +121,6 @@ class feed_the_planner:
                     with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
-                    df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
-                    #print(df)
-                    #print("\n\n\n")
     
     def frs_cb(self, frs, args):
         pass
