@@ -112,7 +112,7 @@ class feed_the_planner:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
                 if len(self.saved_odom[0]) != 1:
-                    print(i)
+                    print(args)
                     print("dataframes")
                     print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
