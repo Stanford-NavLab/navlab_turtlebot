@@ -123,11 +123,13 @@ class feed_the_planner:
                 if len(self.saved_odom[0]) != 1:
                     print("dataframes")
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
+                    print(df)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     df.loc[0] = new_data[0].tolist()
                     df.loc[1] = new_data[1].tolist()
+                    print(df)
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
                 else:
                     print("csvwriters")
