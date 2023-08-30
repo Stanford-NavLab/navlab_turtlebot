@@ -101,7 +101,7 @@ class feed_the_planner:
         self.update(args)
         # Save calibration data if it has been .1 seconds
         if rospy.get_time()-self.last>=.1:
-            print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
+            print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
             self.last = rospy.get_time()
             #print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             if not self.saved_odom[args] is None:
