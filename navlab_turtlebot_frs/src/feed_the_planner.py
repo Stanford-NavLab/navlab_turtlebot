@@ -101,8 +101,6 @@ class feed_the_planner:
         # Save calibration data if this is turtlebot2
         if args == 1:
             print(odom.pose.pose.position.x)
-            df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
-            print(df)
             if not self.saved_odom is None:
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:
@@ -119,14 +117,16 @@ class feed_the_planner:
                     print(df)
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=False)
                 else:
+                    df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
+            print(df)
                     print("csvwriters")
                     rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
-            df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
-            print(df)
-            print("\n\n\n")
+                    df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
+                    print(df)
+                    print("\n\n\n")
     
     def frs_cb(self, frs, args):
         pass

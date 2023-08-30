@@ -34,6 +34,7 @@ for sim in range(n_sims):
     print("STARTING SIM #" + str(sim))
     df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
     print(df)
+    print("\n\n\n")
     
     with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
         for bot in range(n_bots):
@@ -62,8 +63,10 @@ for sim in range(n_sims):
 
     rospy.sleep(sim_len)
     
+    print("ending")
     df = np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', delimiter=',')
     print(df)
+    print("\n\n\n")
         
     # Close everything
     launch_ion.shutdown()
