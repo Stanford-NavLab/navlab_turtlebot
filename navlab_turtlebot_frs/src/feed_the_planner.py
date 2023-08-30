@@ -53,10 +53,8 @@ class feed_the_planner:
         """
         rows = [[]]
         for i in range(self.n_obs):
-            print(i)
             viable = False
             while not viable:
-                print("adding")
                 # Random locations are in 5x5 square off-center from origin
                 loc = np.random.rand(2)*np.array([-5, 5]) - np.array([0, 2.5])
                 obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=loc[0],y=loc[1])]),radius=1)
@@ -67,17 +65,9 @@ class feed_the_planner:
             self.obs.obstacles.append(obstacle)
             rows[0].append(loc[0])
             rows[0].append(loc[1])
-            print(loc)
-        print(rows)
-        print("obstacles")
-        print("rows")
-        print("\n\n\n")
-        print(np.loadtxt("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv", delimiter=","))
-        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","w") as csvfile:
+        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerows(rows)
-        print(np.loadtxt("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv", delimiter=","))
-        print("finished")
     
     def update(self,bot):
         """

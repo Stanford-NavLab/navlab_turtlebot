@@ -45,7 +45,7 @@ for sim in range(n_sims):
             f.write("  goal_y: "+str(rndxy[1,1])+"\n")
             f.write("  goal_yaw: "+str(rndyaw[1])+"\n")
             rows = [[rndxy[0,0],rndxy[0,1],rndyaw[0],rndxy[1,0],rndxy[1,1],rndyaw[1]]]
-            with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","w") as csvfile:
+            with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
     
