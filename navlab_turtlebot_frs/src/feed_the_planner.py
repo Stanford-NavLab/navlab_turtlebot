@@ -102,7 +102,7 @@ class feed_the_planner:
         # Save calibration data if this is turtlebot2 and it has been .1 seconds
         if args == 1 and rospy.get_time()-self.last>=.1:
             self.last = rospy.get_time()
-            print(odom.pose.pose.position.x, odom.pose.pose.position.y)
+            #print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             if not self.saved_odom is None:
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:

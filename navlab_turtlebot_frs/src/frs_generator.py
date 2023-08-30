@@ -175,7 +175,5 @@ if __name__ == '__main__':
     argParser.add_argument("-n", "--name", help="robot name")
     args, unknown = argParser.parse_known_args()
     
-    print("I did start")
-    
     frs_gen = frs_generator(args.name)
     frs_gen.run()
