@@ -111,29 +111,26 @@ class feed_the_planner:
             if self.saved_odom[args].shape[1] < 120/.1:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
+                print("Turtlebot",args)
                 if len(self.saved_odom[args][0]) != 1:
-                    print(args)
                     print("dataframes")
-                    print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
+                    print("Before loading,", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
-                    print(df)
+                    print("Loaded data frame ", len(df.index))
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
-                    print(len(df.index))
-                    print(df)
+                    print("After drop", len(df.index))
                     df.loc[len(df.index)] = new_data[0].tolist()
                     df.loc[len(df.index)] = new_data[1].tolist()
-                    print(df)
+                    print("After adding", len(df.index))
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', index=False, header=False)
-                    print("\n")
-                    print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
                 else:
                     rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
-            print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
+            print("Final", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
             print("\n\n\n")
     
     def frs_cb(self, frs, args):
