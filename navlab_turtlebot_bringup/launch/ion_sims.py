@@ -50,13 +50,13 @@ for sim in range(n_sims):
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
     
-    # Launch frs-related files
-    launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
-    launch_ion.start()
-    
     # Launch simulator
     launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
     launch_nm.start()
+    
+    # Launch frs-related files
+    launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
+    launch_ion.start()
 
     rospy.sleep(sim_len)
     
