@@ -6,7 +6,7 @@ import csv
 # Arguments/Parameters
 n_bots = 2
 rospy.set_param('n_bots', n_bots)
-n_sims = 50
+n_sims = 3
 sim_len = 60
 rospy.set_param('sim_or_cal','cal')
 
