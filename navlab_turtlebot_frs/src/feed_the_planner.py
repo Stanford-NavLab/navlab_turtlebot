@@ -101,30 +101,15 @@ class feed_the_planner:
         # Save calibration data if this is turtlebot2
         if args == 1:
             print(odom.pose.pose.position.x)
-            # If this isn't the first odom for the simulation
-            # Don't delete if you're not goint to write
-            '''
-            if (not self.saved_odom is None) and self.saved_odom.shape[1] < 120/.1:
-                # delete the last, bad saved odometry
-                df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
-                df = df.drop(df.index[-1])
-                df = df.drop(df.index[-1])
-                df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
-                self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
-            else:
-                self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
-            # Make sure rows are all the same size
-            if self.saved_odom.shape[1] < 120/.1:
-                rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
-                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
-                    csvwriter = csv.writer(csvfile)
-                    csvwriter.writerows(rows)'''
+            df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
+            print(df)
             if not self.saved_odom is None:
                 self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
                 if len(self.saved_odom[0]) != 1:
+                    print("dataframes")
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
@@ -141,6 +126,7 @@ class feed_the_planner:
                         csvwriter.writerows(rows)
             df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
             print(df)
+            print("\n\n\n")
     
     def frs_cb(self, frs, args):
         pass

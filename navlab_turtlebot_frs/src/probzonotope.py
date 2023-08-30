@@ -286,6 +286,13 @@ class probZonotope(object):
         """
         self.G = remove_zero_columns(self.G)
 
+    def get_zono(self,p):
+        """
+        Returns a zonotope enclosing the region with cdf p.
+        For example, if p=.68 then the returned zonotope will have generators of about 1 standard deviation, plus the generators from the original uncertain mean.
+        """
+        pass #multivariate_normal(mean=self.c, cov=self.cov)
+        
 
     ### ====== Properties ====== ### 
     def vertices(self):
