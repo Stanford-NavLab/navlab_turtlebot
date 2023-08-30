@@ -109,6 +109,8 @@ class feed_the_planner:
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
+                # If the length becomes 2, that means that else was trigged in previous if else
+                # That means that this is the second iteration, so csv writer should hav already had a go
                 if len(self.saved_odom[0]) != 1:
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
                     df = df.drop(df.index[-1])
