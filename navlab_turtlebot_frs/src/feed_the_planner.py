@@ -112,13 +112,18 @@ class feed_the_planner:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
                 if len(self.saved_odom[0]) != 1:
+                    print("dataframes")
+                    print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
+                    print(len(df.index))
                     df.loc[len(df.index)] = new_data[0].tolist()
                     df.loc[len(df.index)] = new_data[1].tolist()
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', index=False, header=False)
+                    print("\n")
+                    print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
                 else:
                     rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
@@ -129,7 +134,9 @@ class feed_the_planner:
             print("\n\n\n")
     
     def frs_cb(self, frs, args):
-        pass
+        first = frs[0]
+        second = frs[1]
+        third = frs[2]
     
     def run(self):
         while (not rospy.is_shutdown()):
