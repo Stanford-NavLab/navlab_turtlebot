@@ -51,6 +51,7 @@ class feed_the_planner:
         """
         Make some random obstacles.
         """
+        rows = [[]]
         for i in range(self.n_obs):
             viable = False
             while not viable:
@@ -62,6 +63,11 @@ class feed_the_planner:
                     # Generate new obstacles until they aren't intersecting the starting or goal positions
                     viable = viable and not self.check_range(obstacle,pt,.178/2+.5)
             self.obs.obstacles.append(obstacle)
+            rows[0].append(loc[0])
+            rows[0].append(loc[1])
+        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","w") as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerows(rows)
     
     def update(self,bot):
         """

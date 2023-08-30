@@ -1,6 +1,7 @@
 import roslaunch
 import rospy
 import numpy as np
+import csv
 
 # Arguments/Parameters
 n_bots = 2
@@ -43,6 +44,10 @@ for sim in range(n_sims):
             f.write("  goal_x: "+str(rndxy[1,0])+"\n")
             f.write("  goal_y: "+str(rndxy[1,1])+"\n")
             f.write("  goal_yaw: "+str(rndyaw[1])+"\n")
+            rows = [[rndxy[0,0],rndxy[0,1],rndyaw[0],rndxy[1,0],rndxy[1,1],rndyaw[1]]]
+            with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","w") as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerows(rows)
     
     # Launch frs-related files
     launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
