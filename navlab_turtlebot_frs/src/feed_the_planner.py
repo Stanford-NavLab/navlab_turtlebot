@@ -112,15 +112,19 @@ class feed_the_planner:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
                 if len(self.saved_odom[0]) != 1:
+                    print(i)
                     print("dataframes")
                     print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
+                    print(df)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     print(len(df.index))
+                    print(df)
                     df.loc[len(df.index)] = new_data[0].tolist()
                     df.loc[len(df.index)] = new_data[1].tolist()
+                    print(df)
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', index=False, header=False)
                     print("\n")
                     print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
@@ -129,14 +133,28 @@ class feed_the_planner:
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
-            print("\n")
             print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
             print("\n\n\n")
     
     def frs_cb(self, frs, args):
-        first = frs[0]
-        second = frs[1]
-        third = frs[2]
+        second = frs.trajbased.pzonotopes[0]
+        third = frs.faultbased
+        
+        first_obs = pZonotope(second.generators[0],second.generators[1:3],second.generators[3:])
+        first_obs = first_obs.get_zono(.9)
+        first_v = first_obs.vertices()
+        print(first_v)
+        #first_obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=first_obs.c[0],y=first_obs.c[1])]))
+        second_obs = pZonotope(third.generators[0],third.generators[1:3],third.generators[3:])
+        second_obs = second_obs.get_zono(.9)
+        second_v = second_obs.vertices()
+        print(second_v)
+        #second_obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=first_obs.c[0],y=first_obs.c[1])]))
+        
+        """
+        first = frs.total.zonotopes[0]
+        obs = Zonotope(first.generators[0],first.generators[1:3])
+        """
     
     def run(self):
         while (not rospy.is_shutdown()):

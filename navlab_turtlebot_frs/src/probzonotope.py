@@ -291,7 +291,16 @@ class probZonotope(object):
         Returns a zonotope enclosing the region with cdf p.
         For example, if p=.68 then the returned zonotope will have generators of about 1 standard deviation, plus the generators from the original uncertain mean.
         """
-        pass #multivariate_normal(mean=self.c, cov=self.cov)
+        dist = multivariate_normal(mean=self.c, cov=self.cov)
+        test = np.arange(0,2.5,.1)
+        closest = np.inf
+        closest_i = 0
+        for i in test:
+            prob = dist.cdf(np.array([1,1])*i)-dist.cdf(np.array([-1,-1])*i)
+            if abs(prob-p) <= abs(closest-p):
+                closest = prob
+                closest_i = i
+        return Zonotope(self.c,np.hstack((self.G,np.eye(2)*closest_i)))
         
 
     ### ====== Properties ====== ### 
