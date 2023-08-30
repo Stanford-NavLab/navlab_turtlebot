@@ -94,8 +94,7 @@ class feed_the_planner:
         self.update(args)
         # Save calibration data if this is turtlebot2
         if args == 1:
-            print(odom.pose.pose.position)
-            print("maybe I'll do what I'm supposed to")
+            print(odom.pose.pose.position.x)
             # If this isn't the first odom for the simulation
             # Don't delete if you're not goint to write
             '''
@@ -119,11 +118,9 @@ class feed_the_planner:
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
-                print("working")
                 if len(self.saved_odom[0]) != 1:
                     print("dataframes")
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
-                    print(df)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
