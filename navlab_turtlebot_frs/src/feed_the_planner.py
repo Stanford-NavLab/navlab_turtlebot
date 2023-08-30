@@ -56,7 +56,7 @@ class feed_the_planner:
             print(i)
             viable = False
             while not viable:
-                print(adding)
+                print("adding")
                 # Random locations are in 5x5 square off-center from origin
                 loc = np.random.rand(2)*np.array([-5, 5]) - np.array([0, 2.5])
                 obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=loc[0],y=loc[1])]),radius=1)
