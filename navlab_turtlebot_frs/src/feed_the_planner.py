@@ -91,10 +91,10 @@ class feed_the_planner:
         args is a tuple with one item, the integer number of the agent this plan is for
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
-        print(self.curr_locs[args])
         self.update(args)
         # Save calibration data if this is turtlebot2
         if args == 1:
+            print(odom.pose.pose.position)
             print("maybe I'll do what I'm supposed to")
             # If this isn't the first odom for the simulation
             # Don't delete if you're not goint to write
@@ -119,13 +119,19 @@ class feed_the_planner:
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
-                df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
-                df = df.drop(df.index[-1])
-                df = df.drop(df.index[-1])
-                new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
-                df.loc[0] = new_data[0].to_list()
-                df.loc[1] = new_data[1].to_list()
-                df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
+                try:
+                    df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
+                    df = df.drop(df.index[-1])
+                    df = df.drop(df.index[-1])
+                    new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
+                    df.loc[0] = new_data[0].to_list()
+                    df.loc[1] = new_data[1].to_list()
+                    df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
+                except:
+                    rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
+                    with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
+                        csvwriter = csv.writer(csvfile)
+                        csvwriter.writerows(rows)
     
     def frs_cb(self, frs, args):
         pass
