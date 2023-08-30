@@ -119,7 +119,7 @@ class feed_the_planner:
             else:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
-                try:
+                if len(self.saved_odom[0]) != 1:
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
@@ -127,7 +127,7 @@ class feed_the_planner:
                     df.loc[0] = new_data[0].to_list()
                     df.loc[1] = new_data[1].to_list()
                     df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
-                except:
+                else:
                     rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
                         csvwriter = csv.writer(csvfile)
