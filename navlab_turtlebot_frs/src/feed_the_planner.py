@@ -62,7 +62,7 @@ class feed_the_planner:
                 viable = True
                 for pt in self.stay_away:
                     # Generate new obstacles until they aren't intersecting the starting or goal positions
-                    viable = viable and not self.check_range(obstacle,pt,.178/2+.5)
+                    viable = viable and not self.check_range(obstacle,pt,.178/2+1)
             self.obs.obstacles.append(obstacle)
             rows[0].append(loc[0])
             rows[0].append(loc[1])
@@ -99,8 +99,9 @@ class feed_the_planner:
         """
         self.curr_locs[args] = np.array([odom.pose.pose.position.x, odom.pose.pose.position.y])
         self.update(args)
-        # Save calibration data if this is turtlebot2 and it has been .1 seconds
-        if args == 1 and rospy.get_time()-self.last>=.1:
+        # Save calibration data if it has been .1 seconds
+        if rospy.get_time()-self.last>=.1:
+            print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
             self.last = rospy.get_time()
             #print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             if not self.saved_odom is None:
@@ -109,18 +110,21 @@ class feed_the_planner:
                 self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
             if self.saved_odom.shape[1] < 120/.1:
                 if len(self.saved_odom[0]) != 1:
-                    df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
+                    df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
                     new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                     df.loc[2] = new_data[0].tolist()
                     df.loc[3] = new_data[1].tolist()
-                    df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=False)
+                    df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', index=False, header=False)
                 else:
                     rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
-                    with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
+                    with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
+            print("\n")
+            print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
+            print("\n\n\n")
     
     def frs_cb(self, frs, args):
         pass
