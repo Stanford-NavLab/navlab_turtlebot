@@ -314,6 +314,7 @@ class probZonotope(object):
         -------
         V : np.array
             Vertices 
+            2xN
 
         """
         # Extract variables

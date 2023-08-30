@@ -34,7 +34,7 @@ class feed_the_planner:
         self.generate_obstacles()
         self.curr_locs = [None,None,None,None]
         if rospy.get_param("/sim_or_cal")=='cal':
-            self.saved_odom = None
+            self.saved_odom = [None, None, None, None]
         self.vis_trck = np.zeros((self.n_obs,self.n_bots))
         self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
@@ -104,14 +104,14 @@ class feed_the_planner:
             print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
             self.last = rospy.get_time()
             #print(odom.pose.pose.position.x, odom.pose.pose.position.y)
-            if not self.saved_odom is None:
-                self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
+            if not self.saved_odom[args] is None:
+                self.saved_odom[args] = np.hstack((self.saved_odom[args].copy(), self.curr_locs[args].reshape((2,1)).copy()))
             else:
-                self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
-            if self.saved_odom.shape[1] < 120/.1:
+                self.saved_odom[args] = self.curr_locs[args].reshape((2,1)).copy()
+            if self.saved_odom[args].shape[1] < 120/.1:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
-                if len(self.saved_odom[0]) != 1:
+                if len(self.saved_odom[args][0]) != 1:
                     print(args)
                     print("dataframes")
                     print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
@@ -119,7 +119,7 @@ class feed_the_planner:
                     print(df)
                     df = df.drop(df.index[-1])
                     df = df.drop(df.index[-1])
-                    new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
+                    new_data = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
                     print(len(df.index))
                     print(df)
                     df.loc[len(df.index)] = new_data[0].tolist()
@@ -129,7 +129,7 @@ class feed_the_planner:
                     print("\n")
                     print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=','))
                 else:
-                    rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
+                    rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
