@@ -97,6 +97,7 @@ class feed_the_planner:
             print("maybe I'll do what I'm supposed to")
             # If this isn't the first odom for the simulation
             # Don't delete if you're not goint to write
+            '''
             if (not self.saved_odom is None) and self.saved_odom.shape[1] < 120/.1:
                 # delete the last, bad saved odometry
                 df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
@@ -111,7 +112,19 @@ class feed_the_planner:
                 rows = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
                 with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv","a") as csvfile:
                     csvwriter = csv.writer(csvfile)
-                    csvwriter.writerows(rows)
+                    csvwriter.writerows(rows)'''
+            if not self.saved_odom is None:
+                self.saved_odom = np.hstack((self.saved_odom.copy(), self.curr_locs[args].reshape((2,1)).copy()))
+            else:
+                self.saved_odom = self.curr_locs[args].reshape((2,1)).copy()
+            if self.saved_odom.shape[1] < 120/.1:
+                df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', header=None)
+                df = df.drop(df.index[-1])
+                df = df.drop(df.index[-1])
+                new_data = np.hstack((self.saved_odom,np.zeros((2,int(120/.1)-self.saved_odom.shape[1]))))
+                df.loc[0] = new_data[0].to_list()
+                df.loc[1] = new_data[1].to_list()
+                df.to_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom.csv', index=False, header=None)
     
     def frs_cb(self, frs, args):
         pass
