@@ -67,6 +67,7 @@ class feed_the_planner:
             rows[0].append(loc[1])
         print("obstacles")
         print("rows")
+        print("\n\n\n")
         with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","w") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerows(rows)
