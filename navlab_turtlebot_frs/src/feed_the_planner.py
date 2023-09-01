@@ -47,7 +47,7 @@ class feed_the_planner:
         for i in range(self.n_bots):
             self.pubs.append(rospy.Publisher("/turtlebot"+ str(i+1) + "/move_base/TebLocalPlannerROS/obstacles", ObstacleArrayMsg, queue_size=10))
         self.rate = rospy.Rate(10)
-        self.last = [rospy.get_time(),rospy.get_time()]
+        self.last = [rospy.get_time(),rospy.get_time(),rospy.get_time(),rospy.get_time()]
      
     def generate_obstacles(self):
         """
@@ -102,14 +102,12 @@ class feed_the_planner:
         self.update(args)
         # Save calibration data if it has been .1 seconds
         if rospy.get_time()-self.last[args]>=.1:
-            #print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
             self.last[args] = rospy.get_time()
-            #print(odom.pose.pose.position.x, odom.pose.pose.position.y)
-            if not self.saved_odom[args] is None:
-                self.saved_odom[args] = np.hstack((self.saved_odom[args].copy(), self.curr_locs[args].reshape((2,1)).copy()))
-            else:
+            if self.saved_odom[args] is None:
                 self.saved_odom[args] = self.curr_locs[args].reshape((2,1)).copy()
-            if self.saved_odom[args].shape[1] < 120/.1:
+            else:
+                self.saved_odom[args] = np.hstack((self.saved_odom[args].copy(), self.curr_locs[args].reshape((2,1)).copy()))
+            #if self.saved_odom[args].shape[1] < 120/.1:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
                 #print("Turtlebot",args)
@@ -131,13 +129,13 @@ class feed_the_planner:
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)"""
-                if rospy.get_param("/ending") and not self.logged:
-                    print("trying to log data",args,self.saved_odom[args].shape)
-                    self.logged = True
-                    rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
-                    with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
-                        csvwriter = csv.writer(csvfile)
-                        csvwriter.writerows(rows)
+                #if rospy.get_param("/ending") and not self.logged:
+                #    print("trying to log data",args,self.saved_odom[args].shape)
+                #    self.logged = True
+                #    rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
+                #    with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
+                #       csvwriter = csv.writer(csvfile)
+                #       csvwriter.writerows(rows)
             #print("Final", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
             #print("\n\n\n")
     
@@ -166,6 +164,20 @@ class feed_the_planner:
             for i in range(self.n_bots):
                 rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
                 rospy.Subscriber("/turtlebot1/" + str(i+1) + '/frs', FRSArray, self.frs_cb, (i))
+                
+                # Log stuff
+                # if there is any data
+                if (not self.saved_odom[i] is None) and rospy.get_param("/ending") and (not self.logged):
+                    self.logged = True
+                    # Make all rows the same length
+                    if self.saved_odom[i].shape[1] >= 120/.1:
+                        rows = self.saved_odom[i][:,:int(120/.1)]
+                    else:
+                        rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
+                    # Log!
+                    with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
+                        csvwriter = csv.writer(csvfile)
+                        csvwriter.writerows(rows)
             self.publish()
             self.rate.sleep()
 
