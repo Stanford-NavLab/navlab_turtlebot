@@ -132,7 +132,7 @@ class feed_the_planner:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)"""
                 if rospy.get_param("/ending") and not self.logged:
-                    print("trying to log data",args,self.saved_odom[args])
+                    print("trying to log data",args,self.saved_odom[args].shape)
                     self.logged = True
                     rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
