@@ -9,6 +9,12 @@ rospy.set_param('n_bots', n_bots)
 n_sims = 5
 sim_len = 60
 rospy.set_param('sim_or_cal','cal')
+# TEB Local Planner Parameters
+for bot in range(n_bots):
+    rospy.set_param('~/turtlebot'+str(bot+1)+'/max_vel_x',.22)
+    rospy.set_param('~/turtlebot'+str(bot+1)+'/max_vel_theta',2.84)
+    rospy.set_param('~/turtlebot'+str(bot+1)+'/footprint_model/type','circular')
+    rospy.set_param('~/turtlebot'+str(bot+1)+'/footprint_model/radius',.105)
 
 # Initialize things for launching launch file
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)

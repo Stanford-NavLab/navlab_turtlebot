@@ -146,12 +146,16 @@ class feed_the_planner:
         first_obs = pZonotope(second.generators[0],second.generators[1:3],second.generators[3:])
         first_obs = first_obs.get_zono(.9)
         first_v = first_obs.vertices()
-        print(first_v)
-        #first_obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=first_obs.c[0],y=first_obs.c[1])]))
+        first_obstacle = ObstacleMsg(polygon=Polygon())
+        for vert in first_v.T:
+            first_obstacle.polygon.points.append(Point32(x=vert[0],y=vert[1]))
         second_obs = pZonotope(third.generators[0],third.generators[1:3],third.generators[3:])
         second_obs = second_obs.get_zono(.9)
         second_v = second_obs.vertices()
-        print(second_v)
+        second_obstacle = ObstacleMsg(polygon=Polygon())
+        for vert in second_v.T:
+            second_obstacle.polygon.points.append(Point32(x=vert[0],y=vert[1]))
+        #print(second_v)
         #second_obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=first_obs.c[0],y=first_obs.c[1])]))
         
         """
@@ -167,8 +171,13 @@ class feed_the_planner:
                 
                 # Log stuff
                 # if there is any data
+                if rospy.get_param('/ending'):
+                    print(self.saved_odom[i] is None)
+                    print(self.logged)
                 if (not self.saved_odom[i] is None) and rospy.get_param("/ending") and (not self.logged):
                     self.logged = True
+                    print("trying",i)
+                    print('\n')
                     # Make all rows the same length
                     if self.saved_odom[i].shape[1] >= 120/.1:
                         rows = self.saved_odom[i][:,:int(120/.1)]
