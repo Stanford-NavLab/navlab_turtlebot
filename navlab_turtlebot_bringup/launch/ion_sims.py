@@ -54,6 +54,8 @@ for sim in range(n_sims):
     launch_nm = roslaunch.parent.ROSLaunchParent(uuid, nm_file)
     launch_nm.start()
     
+    rospy.set_param('ending',False)
+    
     # Launch frs-related files
     launch_ion = roslaunch.parent.ROSLaunchParent(uuid, ion_file)
     launch_ion.start()
@@ -61,13 +63,15 @@ for sim in range(n_sims):
     rospy.sleep(sim_len)
     
     print("ending")
+    rospy.set_param('ending',True)
+    rospy.sleep(1)
         
-    print("Before closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape) 
-    print("Before closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape) 
+    #print("Before closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape) 
+    #print("Before closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape) 
         
     # Close everything
     launch_ion.shutdown()
     launch_nm.shutdown()
     
-    print("After closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape)
-    print("After closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape)
+    #print("After closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape)
+    #print("After closing", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape)

@@ -101,7 +101,7 @@ class feed_the_planner:
         self.update(args)
         # Save calibration data if it has been .1 seconds
         if rospy.get_time()-self.last[args]>=.1:
-            print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
+            #print(np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
             self.last[args] = rospy.get_time()
             #print(odom.pose.pose.position.x, odom.pose.pose.position.y)
             if not self.saved_odom[args] is None:
@@ -111,8 +111,8 @@ class feed_the_planner:
             if self.saved_odom[args].shape[1] < 120/.1:
                 # If the length becomes 2, that means that else was trigged in previous if else
                 # That means that this is the second iteration, so csv writer should hav already had a go
-                print("Turtlebot",args)
-                if len(self.saved_odom[args][0]) != 1:
+                #print("Turtlebot",args)
+                """if len(self.saved_odom[args][0]) != 1:
                     print("dataframes")
                     #print("Before loading,", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
                     df = pd.read_csv('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', header=None)
@@ -129,9 +129,14 @@ class feed_the_planner:
                     rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
+                        csvwriter.writerows(rows)"""
+                if not rospy.get_param("/ending"):
+                    rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
+                    with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
+                        csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
-            print("Final", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
-            print("\n\n\n")
+            #print("Final", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
+            #print("\n\n\n")
     
     def frs_cb(self, frs, args):
         second = frs.trajbased.pzonotopes[0]
