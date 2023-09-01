@@ -19,14 +19,14 @@ for bot in range(n_bots):
 # Initialize things for launching launch file
 uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
 roslaunch.configure_logging(uuid)
-cli_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/navigate_multi.launch', \
+cli_args = ['/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/navigate_multi.launch', \
             'robot_count:=2', \
             'planner:=goal', \
-            'goal_file:=/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml', \
+            'goal_file:=/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml', \
             'open_rviz:=false']
 roslaunch_args = cli_args[1:]
 nm_file = [(roslaunch.rlutil.resolve_launch_arguments(cli_args)[0], roslaunch_args)]
-ion_args = ['/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/ion-stuff.launch', \
+ion_args = ['/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_bringup/launch/ion-stuff.launch', \
             'name:=turtlebot1']
 roslaunch_ionargs = ion_args[1:]
 ion_file = [(roslaunch.rlutil.resolve_launch_arguments(ion_args)[0], roslaunch_ionargs)]
@@ -39,7 +39,7 @@ launch.start()
 for sim in range(n_sims):
     print("STARTING SIM #" + str(sim))
     
-    with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
+    with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/param/current_goal.yaml","w") as f:
         for bot in range(n_bots):
             f.write("turtlebot"+str(bot+1)+":\n")
             # in 5x5 square with edge on y axis
@@ -52,7 +52,7 @@ for sim in range(n_sims):
             f.write("  goal_y: "+str(rndxy[1,1])+"\n")
             f.write("  goal_yaw: "+str(rndyaw[1])+"\n")
             rows = [[rndxy[0,0],rndxy[0,1],rndyaw[0],rndxy[1,0],rndxy[1,1],rndyaw[1]]]
-            with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
+            with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
     
@@ -69,8 +69,8 @@ for sim in range(n_sims):
     rospy.sleep(sim_len)
     
     print("Before closing", \
-          np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape, \
-          np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape) 
+          np.loadtxt('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape, \
+          np.loadtxt('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape) 
     
     print("ending")
     rospy.set_param('ending',True)
@@ -81,6 +81,6 @@ for sim in range(n_sims):
     launch_nm.shutdown()
     
     print("After closing", \
-          np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape, \
-          np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape)
+          np.loadtxt('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(0)+'.csv', delimiter=',').shape, \
+          np.loadtxt('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(1)+'.csv', delimiter=',').shape)
     print("\n\n\n")

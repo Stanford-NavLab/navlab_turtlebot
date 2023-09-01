@@ -69,7 +69,7 @@ class feed_the_planner:
             self.obs.obstacles.append(obstacle)
             rows[0].append(loc[0])
             rows[0].append(loc[1])
-        with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
+        with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerows(rows)
     
@@ -201,7 +201,7 @@ class feed_the_planner:
                     else:
                         rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
                     # Log!
-                    with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
+                    with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)
             self.publish()

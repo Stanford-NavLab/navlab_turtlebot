@@ -67,7 +67,7 @@ class frs_generator:
             rows = []
             for t, zono in enumerate(first.zonotopes):
                 rows.append([self.t_sim+t*.1] + list(zono.generators.flatten()))
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
+            with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
@@ -84,7 +84,7 @@ class frs_generator:
             rows = []
             for t, zono in enumerate(second.pzonotopes):
                 rows.append([self.t_sim+t*.1] + list(zono.generators.flatten()))
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
+            with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
@@ -96,7 +96,7 @@ class frs_generator:
             representation.faultbased = third
             
             rows = [[self.t_sim] + list(third.generators.flatten())]
-            with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
+            with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
             
@@ -148,10 +148,10 @@ class frs_generator:
             if len(traj[0]) < 120/.3:
                 rows = [np.hstack((traj[0],np.zeros((int(120/.3)-len(traj[0]),)))), \
                         np.hstack((traj[1],np.zeros((int(120/.3)-len(traj[0]),))))]
-                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/caltraj.csv","a") as csvfile:
+                with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/caltraj.csv","a") as csvfile:
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerows(rows)
-                with open("/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
+                with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
                     f.write(str(rospy.get_param("/split"))+"\n")
 
         # Generate the third FRS (fault)
