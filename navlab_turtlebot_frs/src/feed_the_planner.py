@@ -39,6 +39,7 @@ class feed_the_planner:
         self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
+        self.logged = False
         
         # ROS stuff
         rospy.init_node('feed_the_planner', anonymous=True)
@@ -130,7 +131,8 @@ class feed_the_planner:
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
                         csvwriter.writerows(rows)"""
-                if not rospy.get_param("/ending"):
+                if rospy.get_param("/ending") and not self.logged:
+                    self.logged = True
                     rows = np.hstack((self.saved_odom[args],np.zeros((2,int(120/.1)-self.saved_odom[args].shape[1]))))
                     with open('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv',"a") as csvfile:
                         csvwriter = csv.writer(csvfile)
