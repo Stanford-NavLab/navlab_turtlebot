@@ -38,6 +38,8 @@ class feed_the_planner:
         self.vis_trck = np.zeros((self.n_obs,self.n_bots))
         self.vis_obs = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
+        self.ag = [ObstacleArrayMsg(), ObstacleArrayMsg(header=Header(), obstacles=[]), \
+                        ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
         self.logged = False
         
@@ -91,7 +93,14 @@ class feed_the_planner:
         Publish the obstacles to different topics.
         """
         for i in range(self.n_bots):
-            self.pubs[i].publish(self.vis_obs[i])
+            if i==0:
+                pub_data = ObstacleArrayMsg()
+                pub_data.obstacles = self.vis_obs[i].obstacles.copy()
+                for bot in range(self.n_bots):
+                    pub_data.obstacles = pub_data.obstacles.copy() + self.ag[bot].obstacles.copy()
+                self.pubs[i].publish(pub_data)
+            else:
+                self.pubs[i].publish(self.vis_obs[i])
     
     def odom_cb(self, odom, args):
         """
@@ -140,21 +149,29 @@ class feed_the_planner:
             #print("\n\n\n")
     
     def frs_cb(self, frs, args):
+        # Get the relevant data out of the frs
         second = frs.trajbased.pzonotopes[0]
         third = frs.faultbased
-        
+
+        # Reset the agent obstacles
+        self.ag[args].obstacles = []
+
+        # Make an obstacle out of the no-fault case
         first_obs = pZonotope(second.generators[0],second.generators[1:3],second.generators[3:])
         first_obs = first_obs.get_zono(.9)
         first_v = first_obs.vertices()
         first_obstacle = ObstacleMsg(polygon=Polygon())
         for vert in first_v.T:
             first_obstacle.polygon.points.append(Point32(x=vert[0],y=vert[1]))
+        self.ag[args].obstacles.append(first_obstacle)
+        # Make an obstacle out of the fault case
         second_obs = pZonotope(third.generators[0],third.generators[1:3],third.generators[3:])
         second_obs = second_obs.get_zono(.9)
         second_v = second_obs.vertices()
         second_obstacle = ObstacleMsg(polygon=Polygon())
         for vert in second_v.T:
             second_obstacle.polygon.points.append(Point32(x=vert[0],y=vert[1]))
+        self.ag[args].obstacles.append(second_obstacle)
         #print(second_v)
         #second_obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=first_obs.c[0],y=first_obs.c[1])]))
         
