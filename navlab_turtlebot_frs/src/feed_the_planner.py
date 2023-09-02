@@ -220,8 +220,6 @@ class feed_the_planner:
             else:
                 rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
             # Log!
-            print("rows:",rows)
-            print(type(rows))
             with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
