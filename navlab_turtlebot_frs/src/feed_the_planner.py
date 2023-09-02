@@ -42,15 +42,16 @@ class feed_the_planner:
                         ObstacleArrayMsg(header=Header(), obstacles=[]), ObstacleArrayMsg(header=Header(), obstacles=[])]
         self.vis_rad = 2 # m
         self.logged = False
-        
+
         # ROS stuff
         rospy.init_node('feed_the_planner', anonymous=True)
+        rospy.on_shutdown(self.write_log)
         self.pubs = []
         for i in range(self.n_bots):
             self.pubs.append(rospy.Publisher("/turtlebot"+ str(i+1) + "/move_base/TebLocalPlannerROS/obstacles", ObstacleArrayMsg, queue_size=10))
         self.rate = rospy.Rate(10)
         self.last = [rospy.get_time(),rospy.get_time(),rospy.get_time(),rospy.get_time()]
-     
+
     def generate_obstacles(self):
         """
         Make some random obstacles.
@@ -69,10 +70,10 @@ class feed_the_planner:
             self.obs.obstacles.append(obstacle)
             rows[0].append(loc[0])
             rows[0].append(loc[1])
-        with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
+        with open("/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/simdeets.csv","a") as csvfile:
             csvwriter = csv.writer(csvfile)
             csvwriter.writerows(rows)
-    
+
     def update(self,bot):
         """
         Update the list of obstacles that each bot can see.
@@ -80,14 +81,14 @@ class feed_the_planner:
         for i, item in enumerate(self.obs.obstacles):
             if self.vis_trck[i][bot] == 0 and self.check_range(item, self.curr_locs[bot], self.vis_rad):
                 self.vis_obs[bot].obstacles.append(item)
-                    
+
     def check_range(self, obstacle, bot_loc, rng):
         """
         Check if the bot is close enough to the obstacle to see it or hit it.
         """
         obs_loc = np.array([obstacle.polygon.points[0].x, obstacle.polygon.points[0].y])
         return np.sum((obs_loc - bot_loc)**2)**.5 <= rng
-    
+
     def publish(self):
         """
         Publish the obstacles to different topics.
@@ -95,13 +96,13 @@ class feed_the_planner:
         for i in range(self.n_bots):
             if i==0:
                 pub_data = ObstacleArrayMsg()
-                pub_data.obstacles = self.vis_obs[i].obstacles.copy()
+                pub_data.obstacles = list(self.vis_obs[i].obstacles)
                 for bot in range(self.n_bots):
-                    pub_data.obstacles = pub_data.obstacles.copy() + self.ag[bot].obstacles.copy()
+                    pub_data.obstacles = list(pub_data.obstacles) + list(self.ag[bot].obstacles)
                 self.pubs[i].publish(pub_data)
             else:
                 self.pubs[i].publish(self.vis_obs[i])
-    
+
     def odom_cb(self, odom, args):
         """
         Save the current positions of the turtlebots.
@@ -147,7 +148,7 @@ class feed_the_planner:
                 #       csvwriter.writerows(rows)
             #print("Final", np.loadtxt('/home/izzie/catkin_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(args)+'.csv', delimiter=',').shape)
             #print("\n\n\n")
-    
+
     def frs_cb(self, frs, args):
         # Get the relevant data out of the frs
         second = frs.trajbased.pzonotopes[0]
@@ -174,39 +175,63 @@ class feed_the_planner:
         self.ag[args].obstacles.append(second_obstacle)
         #print(second_v)
         #second_obstacle = ObstacleMsg(polygon=Polygon(points=[Point32(x=first_obs.c[0],y=first_obs.c[1])]))
-        
+
         """
         first = frs.total.zonotopes[0]
         obs = Zonotope(first.generators[0],first.generators[1:3])
         """
-    
+
     def run(self):
         while (not rospy.is_shutdown()):
+            print("are you running?")
             for i in range(self.n_bots):
                 rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
                 rospy.Subscriber("/turtlebot1/" + str(i+1) + '/frs', FRSArray, self.frs_cb, (i))
-                
-                # Log stuff
-                # if there is any data
-                if rospy.get_param('/ending'):
-                    print(self.saved_odom[i] is None)
-                    print(self.logged)
-                if (not self.saved_odom[i] is None) and rospy.get_param("/ending") and (not self.logged):
-                    self.logged = True
-                    print("trying",i)
-                    print('\n')
-                    # Make all rows the same length
-                    if self.saved_odom[i].shape[1] >= 120/.1:
-                        rows = self.saved_odom[i][:,:int(120/.1)]
-                    else:
-                        rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
-                    # Log!
-                    with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
-                        csvwriter = csv.writer(csvfile)
-                        csvwriter.writerows(rows)
+
+                # # Log stuff
+                # # if there is any data
+                # if rospy.get_param('/ending'):
+                #     print(self.saved_odom[i] is None)
+                #     print(self.logged)
+                # if (not self.saved_odom[i] is None) and rospy.get_param("/ending") and (not self.logged):
+                #     self.logged = True
+                #     print("trying",i)
+                #     print('\n')
+                #     # Make all rows the same length
+                #     if self.saved_odom[i].shape[1] >= 120/.1:
+                #         rows = self.saved_odom[i][:,:int(120/.1)]
+                #     else:
+                #         rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
+                #     # Log!
+                #     print("rows:",rows)
+                #     print(type(rows))
+                #     with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
+                #         csvwriter = csv.writer(csvfile)
+                #         csvwriter.writerows(rows)
             self.publish()
             self.rate.sleep()
 
+
+    def write_log(self):
+        print("writing to log now!")
+        for i in range(self.n_bots):
+            # Make all rows the same length
+            if self.saved_odom[i].shape[1] >= 120/.1:
+                rows = self.saved_odom[i][:,:int(120/.1)]
+            else:
+                rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
+            # Log!
+            print("rows:",rows)
+            print(type(rows))
+            with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
+                csvwriter = csv.writer(csvfile)
+                csvwriter.writerows(rows)
+        print("finished writing!")
+
 if __name__ == '__main__':
-    feeder = feed_the_planner()
-    feeder.run()
+    try:
+        feeder = feed_the_planner()
+        feeder.run()
+        rospy.on_shutdown(feeder.write_log)
+    except rospy.ROSInterruptException:
+        pass

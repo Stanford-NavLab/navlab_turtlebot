@@ -27,7 +27,7 @@ class frs_generator:
         self.trajs = [[],[],[],[]]
         self.received = np.zeros((4,))
         self.goals = []
-        
+
         # ROS stuff
         rospy.init_node(self.name + 'frs_generator', anonymous=True)
         self.frs_pubs = []
@@ -36,7 +36,7 @@ class frs_generator:
         self.rate = rospy.Rate(10)
         self.start = rospy.get_time()
         self.t_sim = 0
-        
+
     def publish_frs(self):
         """
         Publish all FRSs to different topics.
@@ -45,7 +45,7 @@ class frs_generator:
             # Don't publish if we haven't received a trajectory yet
             if self.received[i] == 0:
                 break
-            
+
             representation = FRSArray()
             # 50% chance of random communications loss every second (given one of the other two didn't happen)
             # 50% chance that the comms are broken but it's still moving
@@ -53,7 +53,7 @@ class frs_generator:
             # Starts at ~0% chance
             # Ends at ~50% chance
             representation.weight = 1-.5**(self.t_sim)-.5
-            
+
             # First
             first = ZonotopeMsgArray()
             for zono in self.frss[i][0]:
@@ -63,14 +63,14 @@ class frs_generator:
                 zonomsg.generators = np.vstack((zono.c.T, zono.G.T))
                 first.zonotopes.append(zonomsg)
             representation.total = first
-            
+
             rows = []
             for t, zono in enumerate(first.zonotopes):
                 rows.append([self.t_sim+t*.1] + list(zono.generators.flatten()))
-            with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
+            with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsfirst.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
-            
+
             # Second
             second = pZonotopeMsgArray()
             for zono in self.frss[i][1]:
@@ -80,29 +80,29 @@ class frs_generator:
                 zonomsg.generators = np.vstack((zono.c.T, zono.G.T, zono.cov.T))
                 second.pzonotopes.append(zonomsg)
             representation.trajbased = second
-            
+
             rows = []
             for t, zono in enumerate(second.pzonotopes):
                 rows.append([self.t_sim+t*.1] + list(zono.generators.flatten()))
-            with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
+            with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrssecond.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
-            
+
             # Third
             third = pZonotopeMsg()
             third.dim = 2
             third.num_gen = self.frss[i][2].n_gen
             third.generators = np.vstack((self.frss[i][2].c.T, self.frss[i][2].G.T, self.frss[i][2].cov.T))
             representation.faultbased = third
-            
+
             rows = [[self.t_sim] + list(third.generators.flatten())]
-            with open('/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
+            with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/happyfrsthird.csv', 'w') as csvfile:
                 csvwriter = csv.writer(csvfile)
                 csvwriter.writerows(rows)
-            
+
             # Publish
             self.frs_pubs[i].publish(representation)
-    
+
     def traj_cb(self, plan, args):
         """
         Save received trajectories as 2xN numpy arrays, where N is the length of the trajectory.
@@ -123,7 +123,7 @@ class frs_generator:
                 traj[1][t] = plan.poses[t].pose.position.y
             self.trajs[args] = traj
             self.update(args)
-        
+
     def update(self, args):
         """
         Update the agent you just got the plan for.
@@ -140,7 +140,7 @@ class frs_generator:
 
         # Generate the second FRS (pzonos)
         self.frss[args].append(compute_FRS(init_p, traj=self.trajs[args], N=self.time, goal=self.goals[args], args=args))
-        
+
         # Save calibration data if this is turtlebot2 and it's time to calibrate
         traj = self.trajs[args]
         if args == 1 and rospy.get_param("/sim_or_cal")=="cal":
@@ -148,17 +148,17 @@ class frs_generator:
             if len(traj[0]) < 120/.3:
                 rows = [np.hstack((traj[0],np.zeros((int(120/.3)-len(traj[0]),)))), \
                         np.hstack((traj[1],np.zeros((int(120/.3)-len(traj[0]),))))]
-                with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/caltraj.csv","a") as csvfile:
+                with open("/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/caltraj.csv","a") as csvfile:
                     csvwriter = csv.writer(csvfile)
                     csvwriter.writerows(rows)
-                with open("/home/navlab-exxact/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
+                with open("/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calsplit.txt","a") as f:
                     f.write(str(rospy.get_param("/split"))+"\n")
 
         # Generate the third FRS (fault)
         self.frss[args].append(probZonotope(np.vstack((init_p.reshape((2,1)),np.zeros((2,1)))), \
                                          np.vstack((np.eye(2)*.178/2, np.zeros((2,2)))), \
                                          np.vstack((np.eye(2), np.zeros((2,2))))))
-    
+
     def run(self):
         while (not rospy.is_shutdown()):
             self.t_sim = rospy.get_time() - self.start
@@ -174,6 +174,6 @@ if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-n", "--name", help="robot name")
     args, unknown = argParser.parse_known_args()
-    
+
     frs_gen = frs_generator(args.name)
     frs_gen.run()
