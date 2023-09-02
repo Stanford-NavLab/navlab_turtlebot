@@ -187,26 +187,6 @@ class feed_the_planner:
                 rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
                 rospy.Subscriber("/turtlebot1/" + str(i+1) + '/frs', FRSArray, self.frs_cb, (i))
 
-                # # Log stuff
-                # # if there is any data
-                # if rospy.get_param('/ending'):
-                #     print(self.saved_odom[i] is None)
-                #     print(self.logged)
-                # if (not self.saved_odom[i] is None) and rospy.get_param("/ending") and (not self.logged):
-                #     self.logged = True
-                #     print("trying",i)
-                #     print('\n')
-                #     # Make all rows the same length
-                #     if self.saved_odom[i].shape[1] >= 120/.1:
-                #         rows = self.saved_odom[i][:,:int(120/.1)]
-                #     else:
-                #         rows = np.hstack((self.saved_odom[i],np.zeros((2,int(120/.1)-self.saved_odom[i].shape[1]))))
-                #     # Log!
-                #     print("rows:",rows)
-                #     print(type(rows))
-                #     with open('/home/derek/jpl_ws/src/navlab_turtlebot/navlab_turtlebot_frs/data/calodom'+str(i)+'.csv',"a") as csvfile:
-                #         csvwriter = csv.writer(csvfile)
-                #         csvwriter.writerows(rows)
             self.publish()
             self.rate.sleep()
 
