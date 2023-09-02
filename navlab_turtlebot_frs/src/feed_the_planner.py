@@ -183,7 +183,6 @@ class feed_the_planner:
 
     def run(self):
         while (not rospy.is_shutdown()):
-            print("are you running?")
             for i in range(self.n_bots):
                 rospy.Subscriber("/turtlebot" + str(i+1) + "/odom", Odometry, self.odom_cb, (i))
                 rospy.Subscriber("/turtlebot1/" + str(i+1) + '/frs', FRSArray, self.frs_cb, (i))
