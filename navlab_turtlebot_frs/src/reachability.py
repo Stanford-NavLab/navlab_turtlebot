@@ -13,24 +13,24 @@ import rospy
 
 def compute_PRS(p_0, traj=None, N=50, split=None):
     """Compute Planning Reachable Set (PRS)
-    
-    PRS desribes the reachable positions of planned trajectories over a 
-    space of chosen trajectory parameters (v_peak). These sets do not account  
+
+    PRS desribes the reachable positions of planned trajectories over a
+    space of chosen trajectory parameters (v_peak). These sets do not account
     for any deviations from the planned trajectories to the actual trajectory
     executed by the robot (this is handled by the Error Reachable Set or ERS).
-    They can however, model uncertainty in initial conditions v_0 and a_0 
+    They can however, model uncertainty in initial conditions v_0 and a_0
     (e.g. provided by state estimator covariance).
 
-    PRS is of dimension 2*N_DIM. It has N_DIM dimensions for position, and N_DIM 
-    dimensions for peak velocities, so that it can later be sliced in the peak 
+    PRS is of dimension 2*N_DIM. It has N_DIM dimensions for position, and N_DIM
+    dimensions for peak velocities, so that it can later be sliced in the peak
     velocity dimensions for trajectory planning.
 
-    NOTE: for now, only use position as state. Need to investigate whether velocity 
+    NOTE: for now, only use position as state. Need to investigate whether velocity
           as state is beneficial
 
     PRS dimensions:
-      0 - x  
-      1 - y  
+      0 - x
+      1 - y
       2 - z
       3 - v_pk_x
       4 - v_pk_y
@@ -39,7 +39,7 @@ def compute_PRS(p_0, traj=None, N=50, split=None):
 
     Parameters
     ----------
-    LPM : LPM 
+    LPM : LPM
         Linear planning model object
     p_0 : np.array (N_DIM x 1)
         Initial position
@@ -58,13 +58,13 @@ def compute_PRS(p_0, traj=None, N=50, split=None):
     """
     PRS = N * [None]
     V_pk = Zonotope(np.zeros((2,1)), .22 * np.eye(2))
-    
+
     if traj is None:
         tf = N
     else:
         tf = len(traj[0])
         PRS = PRS[:tf]
-    
+
     for t in range(tf):
         # The default is .3 for teb local planner, and I'm not about to figure out how to change that
         t_sim = t * .3
@@ -76,29 +76,37 @@ def compute_PRS(p_0, traj=None, N=50, split=None):
             center = np.zeros((4,1))
             center[:2] = traj[:,t].reshape(2,1)
             # Covariance increases as driving away, decreases upon nearing goal, forming a parabola with time
-            if t <= split:
-                PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
-                                                                         [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
-                                                                         [0,0,0,0],[0,0,0,0]]))
-            else:
-                PRS[t] = probZonotope(center, np.zeros((4,2)), np.array([[1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
-                                                                         [1-(t_sim-5)**2,1-(t_sim-5)**2,0,0], \
-                                                                         [0,0,0,0],[0,0,0,0]]))
+            if t <= split: # If we are still using the last local plan
+                tprime=t/(split-1) # Scale relative to length of plan
+                PRS[t] = probZonotope(center, np.zeros((4,2)), \
+                         np.array([[.00003*tprime**3-.0002*tprime**2+.0012*tprime-.0009, \
+                                    -.00002*tprime**2+.00008*tprime-.00004,0,0], \
+                                   [-.00002*tprime**2+.00008*tprime-.00004, \
+                                    .00002*tprime**3-.0002*tprime**2+.0011*tprime-.0009,0,0], \
+                                   [0,0,0,0],[0,0,0,0]]))
+            else: # If we have switched to the straight line
+                tprime = (t-(split-1))/(N-split-1) # Scale relative to length of line
+                PRS[t] = probZonotope(center, np.zeros((4,2)), \
+                         np.array([[.0002*tprime**4-.0037*tprime**3+.0350*tprime**2-.1172*tprime+.8013, \
+                                    -.00002*tprime**3-.00006*tprime**2+.0017*tprime+.0054,0,0], \
+                                   [-.00002*tprime**3-.00006*tprime**2+.0017*tprime+.0054, \
+                                    .00007*tprime**4-.0013*tprime**3+.0125*tprime**2-.0374*tprime+.8035,0,0], \
+                                   [0,0,0,0],[0,0,0,0]]))
     return PRS
 
 def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
     """Compute FRS
-    
+
     FRS = PRS + ERS
 
     For, we use a constant zonotope for ERS. ERS includes robot body
-    
+
     """
     FRS = N * [None]
-    
+
     # If the trajectory is shorter than the provided N, then connect end of trajectory to goal with straight line
+    split=N
     if not traj is None:
-        split=None
         if len(traj[0]) < N:
             split=len(traj[0])
             # stuff for logging only on turtlebot2
@@ -122,21 +130,21 @@ def compute_FRS(p_0, traj=None, N=50, goal=None, args=5):
             extension = extension[:,:N-len(traj[0])]
             traj = np.hstack((traj,extension))
             FRS = FRS[:len(traj[0])]
-    
-    PRS = compute_PRS(p_0, traj=traj, N=N, split=None)
-    
+
+    PRS = compute_PRS(p_0, traj=traj, N=N, split=split)
+
     # If we are computing just a normal total FRS
     if traj is None:
-        ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .178/2) * np.eye(2), np.zeros((2, 2)))))
+        ERS = Zonotope(np.zeros((4,1)), np.vstack(((0 + .105) * np.eye(2), np.zeros((2, 2)))))
     else:
         ERS = probZonotope(np.zeros((4,1)), \
-                           np.vstack((.178/2 * np.eye(2), np.zeros((2, 2)))), \
+                           np.vstack((.105 * np.eye(2), np.zeros((2, 2)))), \
                            np.array([[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]))
-        
+
     # Add ERS
     for i, zono in enumerate(PRS):
         FRS[i] = zono + ERS
-    return FRS
+    return FRS, traj
 
 '''
 def generate_collision_constraints_FRS(FRS, obs_map):
@@ -152,7 +160,7 @@ def generate_collision_constraints_FRS(FRS, obs_map):
     obs_map : list
         List of zonotopes representing obstacles
     k_dim : np.array (1D)
-        Dimensions of trajectory parameter 
+        Dimensions of trajectory parameter
     obs_dim : np.array (1D)
         Dimensions of obstacle
 
@@ -160,8 +168,8 @@ def generate_collision_constraints_FRS(FRS, obs_map):
     -------
     A_con : list
         List of constraint matrices
-    b_con : list 
-        List of constraint vectors 
+    b_con : list
+        List of constraint vectors
 
     """
     A_con = []
@@ -196,7 +204,7 @@ def generate_collision_constraints_FRS(FRS, obs_map):
             A_obs, b_obs = buff_obs.halfspace()
             A_con.append(A_obs @ k_slc_G)  # map constraints to be over coefficients of k_slc_G generators
             b_con.append(b_obs)
-    
+
     return A_con, b_con
 
 def generate_collision_constraints_agents(FRS, ag_map):
@@ -215,7 +223,7 @@ def generate_collision_constraints_agents(FRS, ag_map):
         List of constraint matrices
     b_con : list
         List of constraint vectors
-    
+
     """
     A_con = []
     b_con = []
@@ -256,7 +264,7 @@ def generate_collision_constraints_agents(FRS, ag_map):
             A_con.append(A_obs @ k_slc_G)  # map constraints to be over coefficients of k_slc_G generators
             b_con.append(b_obs)
         t+=1
-    
+
     return A_con, b_con
 
 
@@ -276,7 +284,7 @@ def generate_collision_constraints(z, obs_map):
         List of constraint matrices
     b_con : list
         List of constraint vectors
-    
+
     """
     A_con = []
     b_con = []
@@ -307,12 +315,12 @@ def generate_collision_constraints(z, obs_map):
         A_obs, b_obs = buff_obs.halfspace()
         A_con.append(A_obs @ k_slc_G)  # map constraints to be over coefficients of k_slc_G generators
         b_con.append(b_obs)
-    
+
     return A_con, b_con
 
 def check_collision_constraints(A_con, b_con, v_peak):
     """Check a trajectory parameter against halfspace collision constraints.
-    
+
     Parameters
     ----------
     A_con : list
@@ -338,13 +346,13 @@ def check_collision_constraints(A_con, b_con, v_peak):
         c_tmp = A @ lambdas - b  # A*lambda - b <= 0 means inside unsafe set
         c_tmp = c_tmp.max()  # Max of this <= 0 means inside unsafe set
         c = min(c, c_tmp)  # Find smallest max. If it's <= 0, then parameter is unsafe
-    
+
     return c > 0
 
 # TODO: stack the As and bs
 def check_collision_constraints_vectorized(A_con, b_con, v_peak):
     """Check a trajectory parameter against halfspace collision constraints.
-    
+
     Parameters
     ----------
     A_con : list
@@ -372,6 +380,6 @@ def check_collision_constraints_vectorized(A_con, b_con, v_peak):
     c = c.reshape((-1,N))
     c = np.max(c, axis=1)
     c = np.min(c)
-    
-    return c > 0 
+
+    return c > 0
 '''
