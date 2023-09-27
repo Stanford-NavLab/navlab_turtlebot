@@ -5,6 +5,7 @@ import itertools
 
 from utils import remove_zero_columns
 from zonotope import Zonotope
+from scipy.stats import multivariate_normal
 
 class probZonotope(object):
     """ Gaussian Zonotope class
@@ -34,7 +35,7 @@ class probZonotope(object):
 
     def __init__(self, center, generators, cov_mat):
         """ Constructor"""
-        self.c = center 
+        self.c = center
         self.G = generators
         self.cov = cov_mat #Covariance matrix
         self.Z = np.hstack((center, generators))
@@ -61,7 +62,7 @@ class probZonotope(object):
         # Other is a vector
         if type(other) == np.ndarray:
             c = self.c + other
-            G = self.G 
+            G = self.G
         # Other is a zonotope
         else:
             c = self.c + other.c
@@ -77,39 +78,39 @@ class probZonotope(object):
         # Other is a scalar
         if np.isscalar(other):
             c = other * self.c
-            G = other * self.G 
+            G = other * self.G
             cov = other * self.cov * other
         # Other is a matrix
         elif type(other) is np.ndarray:
             c = np.matmul(other, self.c)
             G = np.matmul(other, self.G)
             cov = np.matmul(np.matmul(other, self.cov), other)
-        return probZonotope(c,G,cov) 
-    
+        return probZonotope(c,G,cov)
+
 
     def __mul__(self, other):
         """ (Left) linear map (overloads '*') """
         # Other is a scalar
         if np.isscalar(other):
             c = other * self.c
-            G = other * self.G 
+            G = other * self.G
             cov = other * self.cov * other
         # Other is a matrix
         elif type(other) is np.ndarray:
             c = np.matmul(self.c, other)
             G = np.matmul(self.G, other)
             cov = np.matmul(np.matmul(other, self.cov), other)
-        return probZonotope(c,G,cov) 
+        return probZonotope(c,G,cov)
 
 
     def sample(self, n_points):
         """Sample
-        
+
         Randomly sample points from the interior of the zonotope
 
         """
         c = self.c
-        G = self.G 
+        G = self.G
         factors = -1 + 2 * np.random.rand((G.shape[1],n_points))
         p = c + np.matmul(G, factors)
         return p
@@ -117,7 +118,7 @@ class probZonotope(object):
     def gsample(self, n_points):
         """
         Randomly sample points according to distribution of g-zonotope. Doesn't make sense to use for a p-zonotope.
-        
+
         Output is in shape n_points x number of dimensions
         """
         pts = np.tile(self.c.copy().reshape((1,4)),(n_points,1))
@@ -126,12 +127,12 @@ class probZonotope(object):
         #for pt in range(len(pts)):
         #    pts[pt] += np.sum(self.cov.copy()*np.random.standard_normal(size=self.cov.shape),axis=0)
         return pts
-    
+
     def augment(self, Z):
         """Augment with another zonotope
 
         Stacks center and generators together to form new zonotope
-        
+
         Parameters
         ----------
         Z : Zonotope
@@ -147,17 +148,17 @@ class probZonotope(object):
         G = np.vstack((self.G, Z.G))
         return Zonotope(c,G)
 
-    
+
     def slice(self, dim, slice_pt):
-        """Slice zonotope along dim 
-        
+        """Slice zonotope along dim
+
         Parameters
         ----------
         dim : int or list
             Dimension(s) to slice
         slice_pt : np.array
             Point to slice at
-        
+
         Returns
         -------
         Zonotope
@@ -191,10 +192,10 @@ class probZonotope(object):
 
         return Zonotope(newc, newG)
 
-    
+
     def view(self, dim):
         """View zonotope in sub dimensions
-        
+
         Parameters
         ----------
         dim : int or list
@@ -215,10 +216,10 @@ class probZonotope(object):
         """Generate halfspace representation A*x <= b
 
         Supports dim <= 3 (i.e. 1,2,3). Intended for full rank zonotopes (rank(G) >= n).
-        
+
         Returns
         -------
-        A : np.array () 
+        A : np.array ()
         b : np.array ()
 
         """
@@ -228,7 +229,7 @@ class probZonotope(object):
         n = self.dim
         m = self.n_gen
 
-        assert n <= 3, "Dimension not supported."   
+        assert n <= 3, "Dimension not supported."
         assert np.linalg.matrix_rank(G) >= n, "Generator matrix is not full rank." + str(G)
 
         if n > 1:
@@ -246,7 +247,7 @@ class probZonotope(object):
             # TODO: remove nans
         else:
             C = G
-        
+
         # Normalize normal vectors
         C = np.divide(C, np.linalg.norm(C, axis=0)).T
         # Build d vector
@@ -264,7 +265,7 @@ class probZonotope(object):
 
         Method 1: convert to halfspace
         Method 2: solve for coefficients (minimization)
-        
+
         Parameters
         ----------
         x : np.array (dim x 1)
@@ -282,7 +283,7 @@ class probZonotope(object):
 
     def delete_zeros(self):
         """Remove all zeros generators
-        
+
         """
         self.G = remove_zero_columns(self.G)
 
@@ -291,29 +292,38 @@ class probZonotope(object):
         Returns a zonotope enclosing the region with cdf p.
         For example, if p=.68 then the returned zonotope will have generators of about 1 standard deviation, plus the generators from the original uncertain mean.
         """
-        dist = multivariate_normal(mean=self.c, cov=self.cov)
-        test = np.arange(0,2.5,.1)
+        dist = multivariate_normal(mean=self.c.reshape((2,)), cov=self.cov)
+        test = np.arange(0,10.,.1)
         closest = np.inf
-        closest_i = 0
+        closest_i = 10.
+        #print("getting zono")
         for i in test:
-            prob = dist.cdf(np.array([1,1])*i)-dist.cdf(np.array([-1,-1])*i)
-            if abs(prob-p) <= abs(closest-p):
+            # Area where all components are smaller than [i,i]
+            # minus area where all components are smaller than [-i,-i]
+            # minus area between [-i,i] and [-i,-i]
+            # minus area between [i,-i] and [-i,-i]
+            prob = dist.cdf([i,i]) - dist.cdf([-i,-i]) \
+                   - (dist.cdf([-i,i]) - dist.cdf([-i,-i])) \
+                   - (dist.cdf([i,-i]) - dist.cdf([-i,-i]))
+            #print(i,prob,p)
+            # Get closest answer as long as it overbounds
+            if abs(prob-p) <= abs(closest-p) and prob >= p:
                 closest = prob
                 closest_i = i
         return Zonotope(self.c,np.hstack((self.G,np.eye(2)*closest_i)))
-        
 
-    ### ====== Properties ====== ### 
+
+    ### ====== Properties ====== ###
     def vertices(self):
-        """ Vertices of zonotope 
-        
+        """ Vertices of zonotope
+
         Adapted from CORA \@zonotope\vertices.m and \@zonotope\polygon.m
         Tested on 2D zonotopes (n==2)
 
         Returns
         -------
         V : np.array
-            Vertices 
+            Vertices
             2xN
 
         """
@@ -346,10 +356,10 @@ class probZonotope(object):
             # Cumsum the generators in order of angle
             V = np.zeros((2,m+1))
             for i in range(m):
-                V[:,i+1] = V[:,i] + 2 * Gnorm[:,IX[i]] 
+                V[:,i+1] = V[:,i] + 2 * Gnorm[:,IX[i]]
 
             V[0,:] = V[0,:] + xmax - np.max(V[0,:])
-            V[1,:] = V[1,:] - ymax 
+            V[1,:] = V[1,:] - ymax
 
             # Flip/mirror upper half to get lower half of zonotope (point symmetry)
             V = np.block([[V[0,:], V[0,-1] + V[0,0] - V[0,1:]],
@@ -368,25 +378,25 @@ class probZonotope(object):
                 print("Vertices for non full-dimensional zonotope not implemented yet - returning empty array")
                 V = np.empty()
                 return V
-            
+
             # Generate vertices for a unit parallelotope
             vert = np.array(np.meshgrid([1, -1], [1, -1], [1, -1])).reshape(3,-1)
             V = c + np.matmul(G[:,:n], vert)
-            
+
             #TODO: rest unimplemented
 
         return V
-            
+
 
     ### ====== Plotting ====== ###
     def plot(self, ax=None, color='b', alpha=0.2, line_alpha=1):
-        """Plot function 
-        
-        Parameters 
+        """Plot function
+
+        Parameters
         ----------
         ax : matplotlib.axes
             Axes to plot on, if unspecified, will generate and plot on new set of axes
-        color : color 
+        color : color
             Plot color
         alpha : float (from 0 to 1)
             Patch transparency

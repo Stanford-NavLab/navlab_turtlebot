@@ -12,9 +12,9 @@
   <arg name="base_local_planner" default="teb_local_planner/TebLocalPlannerROS"/>
 
   <!-- Planner params -->
-  <group if="$(eval arg('base_local_planner') == 'teb_local_planner/TebLocalPlannerROS')">
+  <!-- <group if="$(eval arg('base_local_planner') == 'teb_local_planner/TebLocalPlannerROS')">
     <param name="move_base/TebLocalPlannerROS/max_vel_x_backwards" value="0.0" if="$(arg move_forward_only)" />
-  </group>
+</group> -->
 
   <group if="$(eval arg('base_local_planner') == 'dwa_local_planner/DWAPlannerROS')">
     <param name="move_base/DWAPlannerROS/xy_goal_tolerance" value="0.2" />

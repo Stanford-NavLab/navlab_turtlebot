@@ -21,6 +21,7 @@ import numpy as np
 import message_filters
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped
+from navlab_turtlebot_frs.msg import FRSArray
 
 class GoalPlanner():
     """Sends goals to turtlebots.
@@ -45,11 +46,14 @@ class GoalPlanner():
                       [],
                       [],
                       []]
-        
+
         for i in range(rospy.get_param("/n_bots")):
             self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/goal_x"))
             self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/goal_y"))
             self.goals[i].append(rospy.get_param("/turtlebot"+str(i+1)+"/goal_yaw"))
+
+        # Determine if you are dead or not
+        self.dead = False #np.random.choice([True,False],1,p=[1-.94**(30)-.05**(30/3), .94**(30)-.05**(30/3)])
 
         # lock object for locking synchronizer variables
         # locked to prevent race conditions during parallelized
@@ -69,6 +73,7 @@ class GoalPlanner():
         rate = rospy.Rate(1) # 1Hz
 
         while not rospy.is_shutdown():
+            rospy.Subscriber('/turtlebot1/1/frs', FRSArray, self.frs_cb)
 
             all_topics = rospy.get_published_topics()
 
@@ -81,6 +86,9 @@ class GoalPlanner():
             self.publish_goals()
             rate.sleep()
 
+    def frs_cb(self,data):
+        if self.dead:
+            self.goals[1] = [rospy.get_param("/turtlebot2/start_x"),rospy.get_param("/turtlebot2/start_y"),rospy.get_param("/turtlebot2/start_yaw")]
 
     def subscribe_to_all(self, new_topics):
         """Subscribes to all new topics and adds to dictionary.
