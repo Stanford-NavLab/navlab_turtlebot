@@ -19,7 +19,7 @@ sudo apt-get install ros-"${ROS_DISTRO}"-turtlebot3 ros-"${ROS_DISTRO}"-move-bas
 
 ## Run
 Gazebo two robot position exchange
-1. `roslaunch navlab_turtlebot_base navigate_multi.launch`
+1. `roslaunch navlab_turtlebot_bringup navigate_multi.launch`
   - `robot_count` = 4
   - `goal_file` = `two_swap.yaml`
 2. Start the controllers
