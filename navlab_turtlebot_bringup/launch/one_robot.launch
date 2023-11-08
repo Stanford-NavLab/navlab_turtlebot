@@ -56,12 +56,4 @@
 
   </group>
 
-  <!-- ################ -->
-  <!--  HARDWARE NODES  -->
-  <!-- ################ -->
-  <group if="$(eval not(arg('sim')))">
-    <node pkg="tf" type="static_transform_publisher" name="vrpn2footprint_$(arg robot_name)"
-      args="0 0 0 0 0 0 1 $(arg robot_name)_tf/odom_mocap $(arg robot_name)_tf/base_footprint 100" />
-  </group>
-
 </launch>

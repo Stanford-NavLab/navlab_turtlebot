@@ -13,7 +13,7 @@
   # parameters for start and goal locations
   <arg name="goal_file" default="$(find navlab_turtlebot_sim)/param/two_swap.yaml"/>
   # type of planner to start, defaults to no planner
-   <arg name="planner" default=""/>
+  <arg name="planner" default=""/>
   # VRPN server, defaults to Stanford Flight Room
   <arg name="server" default="mocap.local"/>
   # Odometry source for planning and RVIZ visualization
