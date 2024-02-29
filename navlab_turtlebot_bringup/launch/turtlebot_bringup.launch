@@ -1,12 +1,36 @@
 <launch>
+    <arg name="robot_name" default="$(env USER)"/>
+    <arg name="model" default="burger"/>
+    <arg name="move_forward_only" default="true"/>
+    # whether to use the ZED camera
+    <arg name="zed" default="false"/>
+    # type of planner to start, defaults to no planner
+    <arg name="planner" default=""/>
+    # Odometry source for planning and RVIZ visualization
+    # options are "mocap", "encoder", or "vio"
+    <arg name="odom_source" default="mocap"/>
 
     <!-- bringup turtlebot -->
-    <include ns="$(env USER)" file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch">
+    <include ns="$(arg robot_name)" file="$(find turtlebot3_bringup)/launch/turtlebot3_core.launch">
         <arg name="multi_robot_name" value="turtlebot_core" />
     </include>
 
+    <group if="$(arg zed)">
+      <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_sensing)/launch/zedm.launch"/>
+    </group>
+
+    <!-- move_base if using goal planner -->
+    <group if="$(eval arg('planner') == 'goal')">
+      <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_planning)/launch/move_base_multi.launch">
+        <arg name="model" value="$(arg model)" />
+        <arg name="robot_name" value="$(arg robot_name)" />
+        <arg name="move_forward_only" value="$(arg move_forward_only)"/>
+        <arg name="odom_topic" value="$(arg odom_source)"/>
+      </include>
+    </group>
+
     <!-- zero command failsafe -->
-    <node ns="$(env USER)" pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
+    <node ns="$(arg robot_name)" pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
       name="zero_cmd_failsafe" output="screen"/>
 
 </launch>

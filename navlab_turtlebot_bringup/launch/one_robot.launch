@@ -9,6 +9,9 @@
   <arg name="move_forward_only" default="true"/>
   # type of planner to start, defaults to no planner
   <arg name="planner" default=""/>
+  # Odometry source for planning and RVIZ visualization
+  # options are "mocap", "encoder", or "vio"
+  <arg name="odom_source" default="mocap"/>
 
   <include file="$(find turtlebot3_bringup)/launch/includes/description.launch.xml">
     <arg name="model" value="$(arg model)" />
@@ -18,14 +21,25 @@
     <param name="publish_frequency" type="double" value="50.0" />
   </node>
 
+  <!-- broadcaster between odom source and base footprint -->
+  <node pkg="navlab_turtlebot_sim" type="odom_tf_broadcaster.py" name="odom_tf_broadcaster"
+      args="$(arg robot_name) $(arg odom_source)" output="screen"/>
+
+  <!-- static map publisher for each odom -->
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_encoder_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_encoder 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_mocap_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_mocap 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_vio_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_vio 100" />
+
+  <!-- ################ -->
+  <!-- SIMULATION NODES -->
+  <!-- ################ -->
   <group if="$(arg sim)">
     <!-- Spawn the robot in Gazebo with ROS parameter initialization -->
     <node pkg="navlab_turtlebot_sim" type="spawn_model.py" name="navlab_spawn_urdf"
         args="$(arg robot_name)" output="screen"/>
-
-    <!-- static map publisher -->
-    <node pkg="tf" type="static_transform_publisher" name="map_odom_publisher"
-      args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom 100" />
 
     <!-- move_base if using goal planner -->
     <group if="$(eval arg('planner') == 'goal')">
@@ -40,11 +54,6 @@
     <node pkg="navlab_turtlebot_control" type="zero_cmd_failsafe.py"
       name="zero_cmd_failsafe" output="screen"/>
 
-  </group>
-
-  <group if="$(eval not(arg('sim')))">
-    <node pkg="tf" type="static_transform_publisher" name="vrpn2footprint_$(arg robot_name)"
-      args="0 0 0 0 0 0 1 $(arg robot_name)_tf/odom $(arg robot_name)_tf/base_footprint 100" />
   </group>
 
 </launch>
