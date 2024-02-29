@@ -26,7 +26,7 @@ class UWB():
         Turtlebot name used to publish messages.
 
     """
-    def __init__(self, name=None):
+    def __init__(self, name="turtlebot3"):
 
         if name is None:
             self.name = os.environ['USER']
@@ -78,10 +78,13 @@ class UWB():
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-n", "--name", help="robot name")
+    argParser.add_argument("__name", help="ros name")
+    argParser.add_argument("__log", help="log name")
     args = argParser.parse_args()
 
     # Auto-get turtlebot name
     if args.name is None:
-        args.name = os.environ['USER']
+        # args.name = os.environ['USER']
+        args.name = "turtlebot3"
 
     uwb = UWB(args.name)

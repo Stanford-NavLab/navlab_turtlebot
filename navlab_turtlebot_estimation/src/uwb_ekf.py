@@ -9,9 +9,11 @@ __date__ = "28 Feb 2024"
 import os
 import argparse
 
+import tf
 import rospy
 import numpy as np
 import message_filters
+from nav_msgs.msg import Odometry
 
 from navlab_turtlebot_msgs.msg import UWBRange
 
@@ -27,7 +29,7 @@ class UWBEKF():
 
 
     """
-    def __init__(self, name=None, odom_source=None):
+    def __init__(self, name="turtlebot3", odom_source=None):
 
         # Initialize node
         node_name = name + '_uwb_ekf'
@@ -39,6 +41,11 @@ class UWBEKF():
             self.name = os.environ['USER']
         else:
             self.name = name
+
+        # odometry publisher
+        self.odom_pub = rospy.Publisher('/' + name + '/odom_ekf',
+                                        Odometry,
+                                        queue_size = 10)
 
         # subscribers
         self.uwb_subscribers = set()
@@ -106,8 +113,6 @@ class UWBEKF():
             self.uwb_subscribers.add(topic_name)
             self.data[uwb_source] = np.nan
 
-            print("subscribing to",topic_name)
-
     # def cache_all(self, current_topics):
     #     """Subscribes to new topics and creates message_filters cache.
     #
@@ -140,15 +145,9 @@ class UWBEKF():
 
         self.data[uwb_source] = data_measured.range_dist_m
 
-        print(uwb_source, self.data)
-
         if len(self.data) >= 3 and not np.any(np.isnan(list(self.data.values()))):
-            print("received three, resetting!")
             timestamp_measured = data_measured.header.stamp
-            print("measured:",timestamp_measured)
-            print("prev:",self.last_timestep)
             time_delta = (timestamp_measured - self.last_timestep).to_sec()
-            print("diff:",time_delta)
             self.last_timestep = timestamp_measured
             self.ekf_step(time_delta)
             for key, value in self.data.items():
@@ -163,8 +162,6 @@ class UWBEKF():
             Time in seconds since last update.
 
         """
-
-        print("running EKF with time_delta:",time_delta)
 
         # model noise
         Q = 3*time_delta*np.eye(3)
@@ -215,7 +212,21 @@ class UWBEKF():
         self.sigma = (np.eye(3) - Kt.dot(Jm)).dot(sigmabar)
 
         self.ekf_state = mu
-        print(self.ekf_state)
+
+        msg = Odometry()
+        msg.header.stamp = self.last_timestep
+        msg.child_frame_id = self.name + "_tf/odom_ekf"
+        msg.pose.pose.position.x = mu[0,0]
+        msg.pose.pose.position.y = mu[1,0]
+        msg.pose.pose.position.z = 1.
+
+        quaternion = tf.transformations.quaternion_from_euler(0.,0.,0.)
+        msg.pose.pose.orientation.x = quaternion[0]
+        msg.pose.pose.orientation.y = quaternion[1]
+        msg.pose.pose.orientation.z = quaternion[2]
+        msg.pose.pose.orientation.w = quaternion[3]
+
+        self.odom_pub.publish(msg)
 
     def get_uwb_source(self, topic_name):
         """Get source of uwb information.
@@ -260,11 +271,14 @@ class UWBEKF():
 if __name__ == '__main__':
     argParser = argparse.ArgumentParser()
     argParser.add_argument("-n", "--name", help="robot name")
+    argParser.add_argument("__name", help="ros name")
+    argParser.add_argument("__log", help="log name")
     args = argParser.parse_args()
 
     # Auto-get turtlebot name
     if args.name is None:
-        args.name = os.environ['USER']
+        # args.name = os.environ['USER']
+        args.name = "turtlebot3"
 
     try:
         uwb_ekf = UWBEKF(args.name)

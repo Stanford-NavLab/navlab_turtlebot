@@ -32,6 +32,8 @@
     args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_mocap 100" />
   <node pkg="tf" type="static_transform_publisher" name="map_odom_vio_publisher"
     args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_vio 100" />
+  <node pkg="tf" type="static_transform_publisher" name="map_odom_ekf_publisher"
+    args="0 0 0 0 0 0 1 map $(arg robot_name)_tf/odom_ekf 100" />
 
   <!-- ################ -->
   <!-- SIMULATION NODES -->

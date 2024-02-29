@@ -19,6 +19,12 @@
       <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_sensing)/launch/zedm.launch"/>
     </group>
 
+    <!-- UWB sensor -->
+    <node pkg="navlab_turtlebot_sensing" name="uwb" type="uwb.py" output="screen"/>
+
+    <!-- UWB EKF -->
+    <node pkg="navlab_turtlebot_estimation" name="uwb_ekf" type="uwb_ekf.py" output="screen"/>
+
     <!-- move_base if using goal planner -->
     <group if="$(eval arg('planner') == 'goal')">
       <include ns="$(arg robot_name)" file="$(find navlab_turtlebot_planning)/launch/move_base_multi.launch">
