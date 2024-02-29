@@ -19,7 +19,7 @@ sudo apt-get install ros-"${ROS_DISTRO}"-turtlebot3 ros-"${ROS_DISTRO}"-move-bas
 
 ## Run
 Gazebo two robot position exchange
-1. `roslaunch navlab_turtlebot_base navigate_multi.launch`
+1. `roslaunch navlab_turtlebot_bringup navigate_multi.launch`
   - `robot_count` = 4
   - `goal_file` = `two_swap.yaml`
 2. Start the controllers
@@ -35,15 +35,17 @@ In general:
 args: 
  - `robot_count:=n`
  - `sim:=true/false`
- - `planner:=`
- - 
-Params/goal file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`
+ - `planner:="" or "goal"`
+ - `goal_file:=<filename>.yaml`
+   
+(Params/goal file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`)
  - For now, easiest to edit `navigate_multi.launch` to adjust params file
 
 Change ROS planner: `navlab_turtlebot/navlab_turtlebot_planning/launch/move_base_multi.launch`
  - TEB planner or DWA planner
+ - Also edit planner parameters here
 
-TEB planner obstacles:\
+TEB planner obstacles:
 1. publish to topic: `/turtlebot1/move_base/TebLocalPlannerROS/obstacles`
 
 ## Troubleshooting

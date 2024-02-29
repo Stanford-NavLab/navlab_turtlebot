@@ -14,8 +14,9 @@
   <!-- Planner params -->
   <group if="$(eval arg('base_local_planner') == 'teb_local_planner/TebLocalPlannerROS')">
     <param name="move_base/TebLocalPlannerROS/weight_kinematics_forward_drive" value="1000" if="$(arg move_forward_only)" />
-    <param name="move_base/TebLocalPlannerROS/wheelbase" value="0.0" />
-    <param name="move_base/TebLocalPlannerROS/min_obstacle_dist" value="0.1" />
+    <param name="move_base/TebLocalPlannerROS/wheelbase" value="0.1" />
+    <param name="move_base/TebLocalPlannerROS/min_obstacle_dist" value="0.1" /> 
+    <!-- <param name="move_base/TebLocalPlannerROS/weight_obstacle" value="50.0" />   -->
   </group>
 
   <group if="$(eval arg('base_local_planner') == 'dwa_local_planner/DWAPlannerROS')">
