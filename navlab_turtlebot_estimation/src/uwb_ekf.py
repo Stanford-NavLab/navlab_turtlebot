@@ -35,7 +35,7 @@ class UWBEKF():
         node_name = name + '_uwb_ekf'
         rospy.init_node(node_name, anonymous=True)
         rospy.on_shutdown(self.cleanup)
-        rate = rospy.Rate(1) # 1Hz
+        rate = rospy.Rate(15) # 15Hz
 
         if name is None:
             self.name = os.environ['USER']
@@ -75,6 +75,7 @@ class UWBEKF():
 
         while not rospy.is_shutdown():
 
+            self.publish_message()
 
             all_topics = rospy.get_published_topics()
 
@@ -213,11 +214,14 @@ class UWBEKF():
 
         self.ekf_state = mu
 
+
+    def publish_message(self):
+
         msg = Odometry()
         msg.header.stamp = self.last_timestep
         msg.child_frame_id = self.name + "_tf/odom_ekf"
-        msg.pose.pose.position.x = mu[0,0]
-        msg.pose.pose.position.y = mu[1,0]
+        msg.pose.pose.position.x = self.ekf_state[0,0]
+        msg.pose.pose.position.y = self.ekf_state[1,0]
         msg.pose.pose.position.z = 1.
 
         quaternion = tf.transformations.quaternion_from_euler(0.,0.,0.)

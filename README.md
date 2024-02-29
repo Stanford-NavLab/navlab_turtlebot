@@ -15,7 +15,7 @@ sudo apt-get install ros-"${ROS_DISTRO}"-turtlebot3 ros-"${ROS_DISTRO}"-move-bas
 ```
 5. Create a ROS workspace and clone this repo into the `src/` folder of your workspace.
     * If base station, additionally (also in `src/`), clone https://github.com/Stanford-NavLab/navlab_turtlebot_base and install dependencies.
-7. Run `catkin build` from workspace root.
+7. Run `catkin build --cmake-args -DCMAKE_BUILD_TYPE=Release` from workspace root.
 
 ## Run
 Gazebo two robot position exchange
@@ -32,12 +32,12 @@ Gazebo two robot position exchange
 In general:
 `roslaunch navlab_turtlebot_bringup navigate_multi.launch`
 
-args: 
+args:
  - `robot_count:=n`
  - `sim:=true/false`
  - `planner:="" or "goal"`
  - `goal_file:=<filename>.yaml`
-   
+
 (Params/goal file location: `navlab_turtlebot_base/navlab_turtlebot_sim/params/`)
  - For now, easiest to edit `navigate_multi.launch` to adjust params file
 

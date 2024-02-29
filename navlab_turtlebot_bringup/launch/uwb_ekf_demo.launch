@@ -38,12 +38,6 @@
     </include>
   </group>
 
-  <!-- Stanford Flight Room Specific Launches -->
-  <group if="$(eval not(arg('sim')))">
-    <!-- VRPN client -->
-    <include file="$(find vrpn_odom_ros)/launch/mocap.launch"/>
-  </group>
-
   <param name="robot_description" command="$(find xacro)/xacro --inorder $(find navlab_turtlebot_sim)/urdf/turtlebot3_$(arg model).urdf.xacro" />
 
   <!-- Map server -->
